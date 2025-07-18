@@ -1,0 +1,311 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eee;
+    margin: 0;
+    padding: 0;
+    display: flex;
+
+}
+
+.container {
+    position: fixed;
+    /* Ensure it stays full-screen */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 90vh;
+    display: flex;
+    margin: auto;
+    flex-direction: column;
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-between;
+    background: #ddddddb6;
+    padding: 5px;
+    height: 6vh;
+    flex-direction: row;
+}
+
+
+.chat-image {
+    width: 200px;
+    /* Set the width */
+    height: 200px;
+    /* Set the height */
+    object-fit: cover;
+    /* Ensure it fits nicely */
+    border-radius: 8px;
+    /* Optional styling */
+    display: block;
+    margin: 5px 0;
+}
+
+.picture-style {
+    width: auto;
+    height: 200px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.audio-style {
+    width: 300px;
+    margin-top: 10px;
+}
+
+.zip-style {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.zip-style:hover {
+    background-color: #0056b3;
+}
+
+
+.tab {
+    flex-grow: 1;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.tab.active {
+    background: #ffcc00;
+}
+
+.settings {
+    cursor: pointer;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    height: 70vh;
+}
+
+.user-list {
+    flex: 0 0 20%;
+    height: 97%;
+    background: #fff;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 3px solid #ccc;
+}
+
+.chat-box {
+    flex: 1;
+    height: 97%;
+    background: #fff;
+    padding: 20px;
+    overflow-y: auto;
+    line-height: 1.5;
+    border-right: 5px solid #ccc;
+}
+
+.user-item {
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.user-item:active {
+    background-color: rgb(100, 100, 250);
+    color: white;
+}
+
+
+
+.prefix {
+    font-size: 10px;
+    color: gray;
+}
+
+.message {
+    font-size: 14px;
+    color: black;
+}
+
+
+.control-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: rgba(238, 238, 238, 0.1);
+    /* Adjust opacity with the last value */
+    height: 4vh;
+    flex-direction: row;
+}
+
+
+.input-box-container {
+    display: flex;
+    padding: 5px;
+    background: #eee;
+    height: 10vh;
+}
+
+.input-box {
+    flex-grow: 1;
+    margin-right: 10px;
+    padding: 5px;
+    white-space: normal;
+    /* Allows wrapping at container width */
+    word-wrap: break-word;
+    /* Wraps at word boundaries */
+    overflow-wrap: break-word;
+    /* Ensures proper breaking */
+    max-width: 100%;
+    /* Prevents overflow */
+}
+
+
+
+
+.send-btn {
+    padding: 10px;
+    border: 5px solid black;
+    /* Bold border */
+    border-radius: 15px;
+    /* Rounded edges */
+}
+
+
+.progress-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: gray;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: limegreen;
+}
+
+
+.settings-page {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    height: 100vh;
+    z-index: 9999;
+}
+
+.floating-form {
+    position: absolute;
+    top: 300;
+    left: 100;
+    background: white;
+    border: 2px solid #ccc;
+    padding: 20px;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+canvas {
+    cursor: crosshair;
+    border: 1px solid #000;
+    width: 100%;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.downloadLink {
+    display: none;
+    margin-top: 10px;
+}
+
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.floating-form select {
+    display: block;
+    margin-bottom: 10px;
+    /* Adds spacing between dropdowns */
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: background-color 0.3s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    top: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+input:checked+.slider {
+    background-color: #4CAF50;
+}
+
+input:checked+.slider:before {
+    transform: translateX(24px);
+}
+
+#status {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #333;
+}

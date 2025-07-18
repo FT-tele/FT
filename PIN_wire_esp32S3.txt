@@ -1,0 +1,46 @@
+
+//---------------------------------------------------------VariableDefine.h
+//-----------------------------SPI
+NssPin 10
+RstPin 8
+BusyPin 9
+DIO1Pin 38
+DIO2Pin 46
+
+
+MISO 13
+MOSI 11
+SPI_CLK 12
+
+
+
+//-----------------------------I2C { ssd_1306_oled_128x64  && MAX3010X }
+SDA_PIN 40
+SCK_PIN 39
+
+//-----------------------------GPS UART {nmea 0183  @9600}
+TX_PIN 43
+RX_PIN 44
+  
+
+//-----------------------------BUTTON && BEEPER
+
+MENU_BTN 15  //long press SOS
+PAGE_BTN 5
+BEEPER 47
+
+
+//-----------------------------RGB LED
+
+RGB_PIN 48
+
+//---------------------------------------------------------Phone.h
+//-----------------------------I2S  {INMP441  && MAX98357A}
+
+AUDIO_SPEAKER_BCLK 17 
+AUDIO_SPEAKER_LRC 16  
+AUDIO_SPEAKER_DIN 18  
+
+AUDIO_MIC_SCK 7       
+AUDIO_MIC_WS 6        
+AUDIO_MIC_SD 4  
