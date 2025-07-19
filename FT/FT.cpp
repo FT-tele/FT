@@ -556,6 +556,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
           if (MeetingNum + WhisperNum)
             sessionToFront();
           vTaskDelay(pdMS_TO_TICKS(100));
+          /*
           String speechListJson;
           File file = LittleFS.open("/speechList.json", "r");
           if (!file) {
@@ -566,7 +567,16 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
             speechListJson += (char)file.read();
           }
           file.close();
-          webSocket.broadcastTXT(speechListJson);
+          */
+
+          char buffer[512];  // Adjust size as needed
+          size_t len = strlen_P(PGM_SpeechListJson);
+          for (size_t i = 0; i < len && i < sizeof(buffer) - 1; i++) {
+            buffer[i] = (char)pgm_read_byte_near(PGM_SpeechListJson + i);
+          }
+          buffer[len] = '\0';  // Null-terminate
+
+         // webSocket.broadcastTXT(buffer);
         }
         break;
       case WStype_TEXT:
@@ -798,7 +808,7 @@ bool idMatch(uint32_t highPart1, uint32_t lowPart1, uint32_t highPart2, uint32_t
 void transformTask(void *pvParameters) {
 
   //Packet
-  uint8_t tk_idx = 0; 
+  uint8_t tk_idx = 0;
   uint8_t RcvBuddy[OCT];
   uint32_t RcvLow;
   uint32_t RcvHigh;
@@ -1078,8 +1088,7 @@ void transformTask(void *pvParameters) {
               } else {
                 //show in oled
               }
-              if(to_web[3]==GPS_MSG){
-                
+              if (to_web[3] == GPS_MSG) {
               }
 
               if (ForwardGroup > 0) {

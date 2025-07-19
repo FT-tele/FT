@@ -10,7 +10,7 @@
 
 
 
-    <link rel="preload" href="chat.js" as="script"> 
+    <link rel="preload" href="chat.js" as="script">
 
 </head>
 
@@ -116,17 +116,15 @@
         </div>
 
         <!-- Floating phoneCall member join meeting Form -->
-        <div id="phone-form" class="floating-form" style="top: 20px; right: 20px;">
-
-
-            <label for="whisperUsers">buddy:</label>
-            <select id="whisperList">
+        <div id="phone-form" class="floating-form" style="top: 20px; right: 20px;">           
+             
             </select>
             <audio id="audioPlayer" autoplay></audio>
-            <div class="button-group">
-                <button id="phoneCallBtn" onclick="phoneModeInit()">📲talking</button>
-                <label for="sliderSwitch">speak</label>
-                <input type="checkbox" id="sliderSwitch">                 
+            <div class="button-group"> 
+                <button id="startSpeak">📲Speak</button>
+                <button id="testToneBtn">Test Tone</button>
+                <div id="status">listening</div>
+                <div id="chunkSize">AudioSize</div>
                 <button onclick="closeForm('phone-form')">Close ❌</button>
             </div>
         </div>
@@ -153,7 +151,7 @@
 
             <label for="list1">Type:</label>
             <select id="list1">
-                
+
                 <option value="1">👮‍♂️Crime🚨</option>
                 <option value="2">🔥Fire</option>
                 <option value="3">☠️Toxic</option>
