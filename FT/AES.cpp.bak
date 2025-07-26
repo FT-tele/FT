@@ -1,0 +1,136 @@
+
+#include <Curve25519.h>
+#include <esp_heap_caps.h>
+#include <mbedtls/aes.h>
+#include "AES.h"
+#include "VariableDefine.h"
+
+
+
+
+//-----------------------------------RSA
+
+#include <Arduino.h>
+#include <LittleFS.h>
+#include <mbedtls/rsa.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/ctr_drbg.h>
+
+//-----------------------------------test
+
+uint8_t myLen = 0;
+void randByteArray(uint8_t *byteArray) {
+
+  //uint8_t length = random(230, 240);  // Random length between 10 and 50
+  uint8_t length = random(1, 256);  // Random length between 10 and 50
+  myLen = length;
+  for (uint8_t i = 0; i < length; i++) {
+    byteArray[i] = random(0, PKT);  // Random value between 0 and 255
+  }
+}
+
+//-------------------------------------------------------api
+
+void GenerateKeyPairs(uint8_t *myPrivate, uint8_t *myPublic) {
+  Curve25519::dh1(myPrivate, myPublic);
+  Serial.println("\nGenerateKeyPairs myPrivate:\t");
+};
+
+
+void GenerateSharedKey(uint8_t *myPrivate, uint8_t *receivedPublic, uint8_t *aesKey) {
+  //would clean myPrivate[KEY]
+  Curve25519::dh2(myPrivate, receivedPublic);
+  memcpy(aesKey, myPrivate, KEY);
+};
+
+
+/* Apply PKCS#7 padding */
+static void pad(byte *input, uint8_t input_len, uint8_t padded_len) {
+  if (padded_len <= input_len) {
+    return;
+  }
+
+  uint8_t padding_value = padded_len - input_len;
+
+  for (uint8_t i = input_len; i < padded_len; ++i) {
+    input[i] = padding_value;
+  }
+}
+
+/* Remove PKCS#7 padding */
+static void unpad(byte *input, uint8_t *input_len, uint8_t *output_len) {
+  if (*input_len == 0) {
+    return;
+  }
+
+  uint8_t padding_value = input[*input_len - 1];
+
+  if (padding_value > 0 && padding_value <= *input_len) {
+    for (uint8_t i = *input_len - padding_value; i < *input_len; ++i) {
+      if (input[i] != padding_value) {
+        return;
+      }
+    }
+
+    *input_len -= padding_value;
+    *output_len = *input_len;
+  } else {
+    *output_len = *input_len;
+  }
+}
+
+/* AES Encryption */
+static byte padded_input[PKT];
+static uint8_t padded_len = 0;
+
+static uint8_t ret = 0;
+static uint8_t deciphered_len = 0;
+
+uint8_t aes_cipher(byte *source, uint8_t source_len, byte *send, byte *ShareKey, byte *iv, uint8_t *cipheredLen) {
+
+  mbedtls_aes_context aes;
+  mbedtls_aes_init(&aes);
+
+  padded_len = ((source_len + HKEY - 1) / HKEY) * HKEY;
+  *cipheredLen = padded_len;
+
+  memset(padded_input, 0, PKT);
+  //Serial.println("\npadded_input  before FT.");
+  memcpy(padded_input, source, source_len);
+  //Serial.println("\npadded_input after  FT.");
+  pad(padded_input, source_len, padded_len);
+
+  ret = mbedtls_aes_setkey_enc(&aes, ShareKey, PKT);
+
+
+  ret = mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_ENCRYPT, padded_len, iv, padded_input, send);
+
+
+  mbedtls_aes_free(&aes);
+  //free(padded_input);
+  return ret;
+}
+
+/* AES Decryption */
+uint8_t aes_decipher(byte *received, uint8_t received_len, byte *decipheredData, byte *ShareKey, byte *iv, uint8_t *decipheredLen) {
+
+
+
+  mbedtls_aes_context aes;
+  mbedtls_aes_init(&aes);
+
+  ret = mbedtls_aes_setkey_dec(&aes, ShareKey, PKT);
+  if (ret != 0) {
+    //Serial.printf("mbedtls_aes_setkey_dec failed with error: %d\n", ret);
+  }
+
+  ret = mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, received_len, iv, received, decipheredData);
+  if (ret == 0) {
+    deciphered_len = received_len;
+    unpad(decipheredData, &deciphered_len, decipheredLen);
+  }
+  mbedtls_aes_free(&aes);
+
+  //return ret;
+}
