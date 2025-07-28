@@ -28,7 +28,7 @@ static volatile int TransmitState = 0;
 volatile bool rfMode = true;
 uint8_t PktLen[KEY];            // Assuming uint8_t
 uint8_t PayloadData[KEY][PKT];  // Assuming uint8_t
-float PktRssi[KEY]; 
+float PktRssi[KEY];
 static volatile int WsFlag = 0;
 
 //-----------------------------LORA
@@ -846,6 +846,7 @@ void transformTask(void *pvParameters) {
   uint8_t metIdx = 0;
   uint8_t sphIdx = 0;
 
+  uint8_t groupGpsIdx = 0;
 
 
   uint8_t sosType = 0;
@@ -963,8 +964,7 @@ void transformTask(void *pvParameters) {
 
                 case 3:
                   {
-                    //taking HBR
-                    takingHBR = 1;
+                    //taking HBR 
                   }
                   break;
 
@@ -1209,7 +1209,7 @@ void transformTask(void *pvParameters) {
 
               if (oledMsgShow == 1) {  //show in oled
 
-               // Serial.printf("whisper show in oled  to_web[3]. %d \n ", to_web[2]);
+                // Serial.printf("whisper show in oled  to_web[3]. %d \n ", to_web[2]);
                 memset(MsgLoop[wspIdx], 0, PKT);
                 if (to_web[2] == TXT_MSG || to_web[2] == NTF_MSG) {
                   memcpy(MsgLoop[wspIdx + FOUR], &to_web[2], to_web_len - 2);
@@ -1255,10 +1255,23 @@ void transformTask(void *pvParameters) {
 
                 to_web[0] = MET;
                 to_web[1] = RcvMeetingIndex;
-                webSocket.broadcastBIN(to_web, to_web_len);
+                if (to_web[2] == GPS_MSG) {
+
+                  if (groupGpsIdx < OCT) {
+                    memcpy(&GoupGpsList[groupGpsIdx], &to_web[3], sizeof(gpsStruct));
+                    groupGpsIdx++;
+                  } else {
+                    for (int i = 1; i < OCT; i++) {
+                      GoupGpsList[i - 1] = GoupGpsList[i];
+                    }
+                    memcpy(&GoupGpsList[OCT - 1], &to_web[3], sizeof(gpsStruct));
+                  }
+
+                } else {
+                  webSocket.broadcastBIN(to_web, to_web_len);
+                }
               }
               if (oledMsgShow == 1) {  //show in oled
-   //             Serial.printf("MeetingList show in oled  to_web[3]. %d \n ", to_web[2]);
                 if (to_web[2] == TXT_MSG || to_web[2] == NTF_MSG) {
                   memset(MsgLoop[metIdx + OCT], 0, PKT);
                   jsonStrtrLen = MeetingList[RcvMeetingIndex].nameLen;
@@ -1289,7 +1302,7 @@ void transformTask(void *pvParameters) {
             }
             if (oledMsgShow == 1) {
               if (PayloadData[tk_idx][1] == 0) {
-           //     Serial.printf("speech show in oled  to_web[3]. %d \n ", to_web[3]);
+                //     Serial.printf("speech show in oled  to_web[3]. %d \n ", to_web[3]);
                 memset(MsgLoop[sphIdx + 12], 0, PKT);
                 memcpy(MsgLoop[sphIdx + 12], &PayloadData[tk_idx][2], PktLen[tk_idx] - 1);
                 sphIdx = (sphIdx + 1) & 3;

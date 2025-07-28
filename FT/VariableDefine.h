@@ -16,8 +16,7 @@
 #define RstPin 8
 #define BusyPin 9
 #define DIO1Pin 38
-#define DIO2Pin 46
-#define RGB_PIN 48
+#define DIO2Pin 46 
 
 //-----------------------------I2C
 #define SDA_PIN 40
@@ -26,7 +25,7 @@
 #define TX_PIN 43
 #define RX_PIN 44
 
-#define MIN_MILL 60000
+#define MIN_MILL 6000
 //-----------------------------RGB ws2812
 #define LED_PIN 48
 #define BRIGHTNESS 40
@@ -162,13 +161,13 @@ extern uint8_t LanguageFont;  // if  peripherals attached ,msg langunge
 extern bool ButtonIR;         //speak PTT
 extern uint8_t EnterSOS;
 extern uint8_t takingHBR;
-extern uint8_t LocationSaveFreq;     //save gps to PathGpsList
+extern uint8_t LocationSaveFreq;  //
 
-extern uint8_t oledMsgShow;     //save gps to PathGpsList
+extern uint8_t oledMsgShow;          //
 extern uint8_t RelayNum;             //from the last PathGpsList position count , received sensorRelay broadcast
 extern uint8_t FavoriteMAC[OCT][6];  //emergency contact  MAC,first is selfMac
 
-extern volatile bool TurnOnWifi;   //0 off / 1 on
+extern volatile bool TurnOnWifi;  //0 off / 1 on
 
 extern uint8_t LedRed;
 extern uint8_t LedGreen;
@@ -397,6 +396,7 @@ extern ContactStruct MeetingList[ULIST];
 
 
 extern gpsStruct PathGpsList[KEY];
+extern gpsStruct GoupGpsList[OCT];
 extern SystemConfig FTconfig;
 
 

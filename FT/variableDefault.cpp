@@ -169,5 +169,6 @@ confirmStruct ConfirmList[OCT];
 
 
 gpsStruct PathGpsList[KEY];
+gpsStruct GoupGpsList[OCT];
 
 SystemConfig FTconfig;

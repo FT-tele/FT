@@ -11,9 +11,7 @@
 #include "Fourier.h"
 #include "Sensor.h"
 #include "VariableDefine.h"
-
-#include "noto_tc_font.c"
-
+ 
 
 
 
@@ -29,7 +27,7 @@ double Latitude = 0;
 double Longitude = 0;
 double Altitude = 0;
 double Speed = 0;
-
+uint8_t pathIndex = 0;
 //StaticJsonDocument<200> GPSjson;
 
 // Variables to track distance
@@ -261,8 +259,8 @@ void gpsTask(void *pvParameters) {
   bool hasLastLocation = false;
 
   Serial1.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
-  uint8_t pathIndex = 0;             //PathGpsList[HKEY];
-  unsigned long lastPathSaving = 0;  //PathGpsList[HKEY];
+
+  unsigned long lastPathSaving = 0;
   vTaskDelay(3000 / portTICK_PERIOD_MS);
   Serial.println("gpsTask  successfully.");
   while (true) {
@@ -292,14 +290,30 @@ void gpsTask(void *pvParameters) {
       lastLon = Longitude;
       hasLastLocation = true;
       if ((millis() - lastPathSaving) > LocationSaveFreq * MIN_MILL) {
-        PathGpsList[pathIndex].latitude = int(Latitude * GPS_INT);
-        PathGpsList[pathIndex].longitude = int(Longitude * GPS_INT);
-        PathGpsList[pathIndex].altitude = float(Altitude);
-        PathGpsList[pathIndex].speed = float(Speed);
-        PathGpsList[pathIndex].relayNum = RelayNum;
+
+        if (pathIndex == 31) {
+          for (int i = 1; i < HKEY; i++) {
+            PathGpsList[i - 1] = PathGpsList[i];
+          }
+          PathGpsList[pathIndex].latitude = int(Latitude * GPS_INT);
+          PathGpsList[pathIndex].longitude = int(Longitude * GPS_INT);
+          PathGpsList[pathIndex].altitude = float(Altitude);
+          PathGpsList[pathIndex].speed = float(Speed);
+          PathGpsList[pathIndex].relayNum = RelayNum;
+
+        } else {
+          PathGpsList[pathIndex].latitude = int(Latitude * GPS_INT);
+          PathGpsList[pathIndex].longitude = int(Longitude * GPS_INT);
+          PathGpsList[pathIndex].altitude = float(Altitude);
+          PathGpsList[pathIndex].speed = float(Speed);
+          PathGpsList[pathIndex].relayNum = RelayNum;
+          pathIndex++;
+        }
+
+
         lastPathSaving = millis();
 
-        pathIndex = (pathIndex + 1) & 15;
+        // pathIndex = (pathIndex + 1) & 15;
 
         GPSjson["T"] = 5;
         GPSjson["W"] = 0;  //self
@@ -419,6 +433,24 @@ void oledTask(void *pvParameters) {
     row[pixelIdx] = (char *)heap_caps_malloc(PKT, MALLOC_CAP_SPIRAM);
 
   Serial.println("oled psram  successfully.");
+
+
+  float minAlt = PathGpsList[0].altitude;
+  float maxAlt = PathGpsList[0].altitude;
+  int minLat = PathGpsList[0].latitude;
+  int maxLat = PathGpsList[0].latitude;
+  int minLon = PathGpsList[0].longitude;
+  int maxLon = PathGpsList[0].longitude;
+  float minSpeed = PathGpsList[0].speed;
+  float maxSpeed = PathGpsList[0].speed;
+
+  int x = 0;  // Map  to screen width
+  int y = 0;  // Map to screen height
+
+
+                      int nextX = 0;
+                      int nextY =0;
+
   while (true) {
 
     u8g2.clearBuffer();
@@ -509,8 +541,28 @@ void oledTask(void *pvParameters) {
             case 2:  //path
               {
 
-                u8g2.setCursor(0, KEY);
-                u8g2.print("OLED_PREVIEW 2");
+
+                if (pathIndex > 15) {
+                  u8g2.setCursor(0, HKEY);
+                  u8g2.print("path map 0");
+
+                  // ⬇️ Start drawing path using PathGpsList
+                  for (int i = 0; i < pathIndex; i++) {
+                      x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
+                      y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
+
+                    u8g2.drawCircle(x, y, 1, U8G2_DRAW_ALL);  // Draw small dot
+
+                    if (i < (pathIndex - 1)) {
+                        nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
+                        nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
+                      u8g2.drawLine(x, y, nextX, nextY);  // Connect to next dot
+                    }
+                  }
+                } else {
+                  u8g2.setCursor(0, HKEY);
+                  u8g2.print("less than 15 point");
+                }
               }
               break;
             case 3:  //dim
@@ -593,32 +645,140 @@ void oledTask(void *pvParameters) {
       case OLED_PATH:
         {
           u8g2.setPowerSave(0);
+          for (int i = 1; i < 31; i++) {
+            if (PathGpsList[i].altitude < minAlt) minAlt = PathGpsList[i].altitude;
+            if (PathGpsList[i].altitude > maxAlt) maxAlt = PathGpsList[i].altitude;
+
+            if (PathGpsList[i].latitude < minLat) minLat = PathGpsList[i].latitude;
+            if (PathGpsList[i].latitude > maxLat) maxLat = PathGpsList[i].latitude;
+
+            if (PathGpsList[i].longitude < minLon) minLon = PathGpsList[i].longitude;
+            if (PathGpsList[i].longitude > maxLon) maxLon = PathGpsList[i].longitude;
+
+            if (PathGpsList[i].speed < minSpeed) minSpeed = PathGpsList[i].speed;
+            if (PathGpsList[i].speed > maxSpeed) maxSpeed = PathGpsList[i].speed;
+          }
           switch (pageButton) {
-            case 0:
+            case 0:  //latest 16 check point
               {
 
-                u8g2.setCursor(0, KEY);
-                u8g2.print("path map 0");
+
+                if (pathIndex > 15) {
+
+                  // ⬇️ Start drawing path using PathGpsList
+                  for (int i = 0; i < 15; i++) {
+                      x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
+                      y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
+
+                    //u8g2.drawCircle(x, y, 1, U8G2_DRAW_ALL);  // Draw small dot
+                    u8g2.drawBox(x - 1, y - 1, 3, 3);  // Bold dot (3×3 square)
+                    if (i < (15 - 1)) {
+                        nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
+                        nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
+                      u8g2.drawLine(x, y, nextX, nextY);  // Connect to next dot
+                    }
+                  }
+                } else {
+                  u8g2.setCursor(0, HKEY);
+                  u8g2.print("only  ");
+                  u8g2.print(pathIndex);
+                  u8g2.setCursor(0, KEY);
+                  u8g2.print(" check point");
+                }
               }
               break;
-            case 1:
+            case 1:  //latest 32 check point
               {
-                //
-                u8g2.setCursor(0, KEY);
-                u8g2.print("path map 1");
+
+
+                if (pathIndex == 31) {
+                  u8g2.setCursor(0, HKEY);
+
+                  // ⬇️ Start drawing path using PathGpsList
+                  for (int i = 0; i < 31; i++) {
+                      x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
+                      y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
+
+                    u8g2.drawCircle(x, y, 1, U8G2_DRAW_ALL);  // Draw small dot
+
+                    if (i < 30) {
+                        nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
+                        nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
+                      u8g2.drawLine(x, y, nextX, nextY);  // Connect to next dot
+                    }
+                  }
+                } else {
+                  u8g2.setCursor(0, HKEY);
+                  u8g2.print("only  ");
+                  u8g2.print(pathIndex);
+                  u8g2.setCursor(0, KEY);
+                  u8g2.print(" check point");
+                }
               }
               break;
             case 2:
               {
-                u8g2.setCursor(0, KEY);
-                u8g2.print("path map 2");
+                u8g2.setFont(u8g2_font_helvR08_te);
+                u8g2.setCursor(KEY, 8);
+                u8g2.print("Altitude:m");
+
+                // Compute min and max altitude
+                float minAlt = PathGpsList[0].altitude;
+                float maxAlt = PathGpsList[0].altitude;
+                for (int i = 1; i < 31; i++) {
+                  if (PathGpsList[i].altitude < minAlt) minAlt = PathGpsList[i].altitude;
+                  if (PathGpsList[i].altitude > maxAlt) maxAlt = PathGpsList[i].altitude;
+                }
+
+                for (int i = 0; i < 31; i++) {
+                    x = map(i, 0, 30, 0, 127);                                // X: evenly spaced across screen
+                    y = map(PathGpsList[i].altitude, minAlt, maxAlt, 63, 0);  // Y: scaled altitude (inverted)
+
+                  u8g2.drawBox(x - 1, y - 1, 3, 3);  // Bold dot (3×3 square)
+                  if (PathGpsList[i].altitude == minAlt) {
+                    u8g2.print(minAlt);
+                  }
+                  if (PathGpsList[i].altitude == maxAlt) {
+                    u8g2.print(maxAlt);
+                  }
+                  if (i < 30) {
+                      nextX = map(i + 1, 0, 30, 0, 127);
+                      nextY = map(PathGpsList[i + 1].altitude, minAlt, maxAlt, 63, 0);
+                    u8g2.drawLine(x, y, nextX, nextY);
+                  }
+                }
               }
+
               break;
             case 3:
               {
-                u8g2.setCursor(0, KEY);
-                u8g2.print("path map 3");
+                u8g2.setFont(u8g2_font_helvR08_te);
+                u8g2.setCursor(KEY, 8);
+                u8g2.print("Speed:km/h");
+
+
+
+                for (int i = 0; i < 31; i++) {
+                    x = map(i, 0, 30, 0, 127);
+                    y = map(PathGpsList[i].speed, minSpeed, maxSpeed, 63, 0);
+
+                  u8g2.drawBox(x - 1, y - 1, 2, 2);  // Small dot (2×2 square)
+                  if (PathGpsList[i].speed == minSpeed) {
+                    u8g2.print(minSpeed);
+                  }
+                  if (PathGpsList[i].speed == maxSpeed) {
+                    u8g2.print(maxSpeed);
+                  }
+
+
+                  if (i < 30) {
+                      nextX = map(i + 1, 0, 30, 0, 127);
+                      nextY = map(PathGpsList[i + 1].speed, minSpeed, maxSpeed, 63, 0);
+                    u8g2.drawLine(x, y, nextX, nextY);
+                  }
+                }
               }
+
               break;
           }
         }

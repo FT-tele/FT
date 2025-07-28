@@ -116,11 +116,11 @@
         </div>
 
         <!-- Floating phoneCall member join meeting Form -->
-        <div id="phone-form" class="floating-form" style="top: 20px; right: 20px;">           
-             
+        <div id="phone-form" class="floating-form" style="top: 20px; right: 20px;">
+
             </select>
             <audio id="audioPlayer" autoplay></audio>
-            <div class="button-group"> 
+            <div class="button-group">
                 <button id="startSpeak">📲Speak</button>
                 <button id="testToneBtn">Test Tone</button>
                 <div id="status">listening</div>
@@ -196,10 +196,35 @@
             </select>
 
             <input type="text" id="alertMsg" maxlength="10" placeholder="Max 10 bytes">
-
             <div class="button-group">
                 <button onclick="deliverSOS()">SOS Alert nearby</button>
                 <button onclick="closeForm('sos-form')">Close ❌</button>
+            </div>
+            <div class="mac-group">
+                <div class="mac-inputs">
+                    <label>Enter MAC Address (Decimal or Hex):</label><br>
+                    <input type="text" id="MAC_input1" placeholder="Byte 1">
+                    <input type="text" id="MAC_input2" placeholder="Byte 2">
+                    <input type="text" id="MAC_input3" placeholder="Byte 3">
+                    <input type="text" id="MAC_input4" placeholder="Byte 4">
+                    <input type="text" id="MAC_input5" placeholder="Byte 5">
+                    <input type="text" id="MAC_input6" placeholder="Byte 6">
+                </div>
+
+                <div class="rgb-inputs">
+                    <label>RGB Values:</label><br>
+                    <input type="number" id="inputR" placeholder="R (0-255)" min="0" max="255">
+                    <input type="number" id="inputG" placeholder="G (0-255)" min="0" max="255">
+                    <input type="number" id="inputB" placeholder="B (0-255)" min="0" max="255">
+                </div>
+
+                <div class="mac-options">
+                    <label>
+                        <input type="checkbox" id="enableMAC"> Enable MAC
+                    </label>
+                </div>
+                <button onclick="Find()">Send MAC Data</button>
+                <button onclick="ackSOS()">ACK SOS</button>
             </div>
         </div>
 

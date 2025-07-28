@@ -47,7 +47,7 @@ void setup() {
 
 
 
-  if (EnableOLED == 1) {
+  if (EnableOLED == 0) {
 
     Wire.begin(SDA_PIN, SCK_PIN);
     Wire.setClock(400000);
