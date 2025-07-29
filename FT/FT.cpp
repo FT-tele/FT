@@ -697,12 +697,13 @@ bool initInfrast() {
       loadSessionList(WhisperList, tempWhisperNum, MeetingList, tempMeetingNum);
 
       //get the MAC address as  uniq identification
-      esp_efuse_mac_get_default(FavoriteMAC[0]);
-      esp_read_mac(FavoriteMAC[0], ESP_MAC_WIFI_SOFTAP);
 
 
       return true;
     }
+    
+      esp_efuse_mac_get_default(FavoriteMAC[0]);
+      esp_read_mac(FavoriteMAC[0], ESP_MAC_WIFI_SOFTAP);
   }
 }
 
@@ -910,11 +911,12 @@ void transformTask(void *pvParameters) {
             memcpy(alt_src_mac, &PayloadData[tk_idx][3 + alt_offset], 6);
             //check is my favorite contact
             for (checkFav = 0; checkFav < OCT; checkFav++) {
-              checkFavorite = compareID(alt_src_mac, FavoriteList[checkFav], 6);
+              checkFavorite = compareID(alt_src_mac, FavoriteMAC[checkFav], 6);
               if (checkFavorite) {
+                 checkFavList = checkFav;
                 break;
               } else {
-                checkFavList == 9;
+                checkFavList = 9;
               }
             }
 
