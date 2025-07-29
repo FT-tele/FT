@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="media-src 'self' blob:;">
+    <title>chat</title>
+
+
+
+    <link rel="preload" href="chat.js" as="script">
+
+</head>
+
+<body>
+
+    <div id="notify"
+        style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #333; color: white; padding: 10px; border-radius: 5px; text-align: center; z-index: 99999;">
+    </div>
+
+
+
+    <div class="container">
+
+        <div class="tabs">
+            <div class="tab" id="whisper-tab">Whisper🎧</div>
+            <div class="tab" id="meeting-tab">Meeting👨‍👩‍👧‍👦</div>
+            <div class="tab" id="speech-tab">Speech🔊</div>
+            <div class="settings" onclick="handleSettingsForm()">Settings⚙️</div>
+        </div>
+
+        <div id="settings-page">
+            <form id="settings-form"> </form>
+        </div>
+
+        <div class="chat-container">
+            <div class="user-list" id="user-list"> </div>
+            <div class="chat-box" id="chat-box"> </div>
+        </div>
+
+        <!-- Floating Picture Preview Form -->
+
+        <div id="pic-form" class="floating-form">
+            <input type="file" id="imageInput" accept="image/*">
+            <div id="preview">
+                <canvas id="canvas"></canvas>
+            </div>
+            <div class="button-group">
+                <button id="convert">Convert to WebP</button>
+                <button id="magicTool">Magic Tool (Blur)</button>
+                <select id="resizeOptions">
+                    <option value="1">Original</option>
+                    <option value="0.1">10%</option>
+                    <option value="0.3">30%</option>
+                    <option value="0.5">50%</option>
+                </select>
+            </div>
+            <a id="downloadLink" download="converted.webp"></a>
+            <div class="button-group">
+                <button onclick="deliverWebp()">Delivery 🚀</button>
+                <button onclick="closeForm('pic-form')">Close ❌</button>
+            </div>
+        </div>
+
+
+        <!-- Floating send file under whisper mode Form -->
+        <div id="sendFile-form" class="floating-form" style="top: 20px; right: 20px;">
+            <label for="sendFile-form">⏳send file take time and may fail—stay close to your buddy for better stability!
+            </label>
+            <div class="button-group">
+                <button onclick="deliverFile()">SEND BIG FILE</button>
+                <button onclick="closeForm('sendFile-form')">Close ❌</button>
+            </div>
+        </div>
+
+
+
+
+        <!-- Floating Audio Recorder Form -->
+        <div id="sensor-form" class="floating-form" style="top: 20px; left: 20px;">
+
+
+            <h3>Monitor Data</h3>
+            <label for="tileBackground"> temp map png </label>
+            <input type="file" id="tileBackground" accept=".png">
+            <div id="banner"
+                style="background: #333; color: white; padding: 10px; text-align: center; font-size: 16px;">
+                Speed: <span id="speed">0</span> km/h | Distance: <span id="distance">0</span> meters
+            </div>
+
+            <div id="map" style="width: 100%; height: 400px;"></div>
+
+            <div class="button-group">
+                <button onclick="closeForm('sensor-form')">Close ❌</button>
+                <button onclick="downloadSensorGroupKey()">⬇️ Download Key</button>
+
+            </div>
+
+            <label for="KeyUpload" class="upload-button"> 🔐Upload Key:</label>
+            <input type="file" id="KeyUpload" onchange="uploadKey(this.files[0])" accept=".pem">
+
+        </div>
+
+
+        <!-- Floating invite  Form -->
+        <div id="invite-form" class="floating-form" style="top: 20px; right: 20px;">
+            <input type="text" id="invitationKey" placeholder="Enter room key" minlength="20">
+            <input type="text" id="meeting" placeholder="Enter meeting room name ,3 letters at least" minlength="4">
+            <div class="button-group">
+                <button onclick="joinMeeting('Random')">Safe Create</button>
+                <button onclick="joinMeeting('join')">🔗Temp Join</button>
+                <button onclick="closeForm('invite-form')">Close ❌</button>
+            </div>
+        </div>
+
+        <!-- Floating phoneCall member join meeting Form -->
+        <div id="phone-form" class="floating-form" style="top: 20px; right: 20px;">
+
+            </select>
+            <audio id="audioPlayer" autoplay></audio>
+            <div class="button-group">
+                <button id="startSpeak">📲Speak</button>
+                <button id="testToneBtn">Test Tone</button>
+                <div id="status">listening</div>
+                <div id="chunkSize">AudioSize</div>
+                <button onclick="closeForm('phone-form')">Close ❌</button>
+            </div>
+        </div>
+
+
+
+        <!-- Floating invite member join meeting Form -->
+        <div id="addMeb-form" class="floating-form" style="top: 20px; right: 20px;">
+
+
+            <label for="whisperUsers">buddy:</label>
+            <select id="whisperList">
+            </select>
+
+            <div class="button-group">
+                <button onclick="addMember()">welcome buddy join room</button>
+                <button onclick="closeForm('addMeb-form')">Close ❌</button>
+            </div>
+        </div>
+
+
+        <!-- Floating SOS  Form -->
+        <div id="sos-form" class="floating-form" style="top: 20px; left: 20px;">
+
+            <label for="list1">Type:</label>
+            <select id="list1">
+
+                <option value="1">👮‍♂️Crime🚨</option>
+                <option value="2">🔥Fire</option>
+                <option value="3">☠️Toxic</option>
+                <option value="4">☣️Pandemics</option>
+                <option value="5">⚔️War</option>
+                <option value="6">🌊Floods</option>
+                <option value="7">🌋Volcano Or Earthquakes</option>
+                <option value="8">🌪️Tornado</option>
+                <option value="9">⛈️Thunder⚡</option>
+                <option value="10">🐻Wild🐍Creature</option>
+                <option value="11">💥Accident</option>
+                <option value="12">None of them</option>
+            </select>
+
+            <label for="list2">🚑Fatality:</label>
+            <select id="list2">
+                <option value="0">0</option>
+                <option value="1">1~3</option>
+                <option value="2">4~9</option>
+                <option value="3">10~20</option>
+                <option value="4">over 20</option>
+            </select>
+
+            <label for="list3">🚒TrappedNum:</label>
+            <select id="list3">
+                <option value="0">0</option>
+                <option value="1">1~10</option>
+                <option value="2">11~20</option>
+                <option value="3">21~30</option>
+                <option value="4">31~50</option>
+                <option value="5">over 50</option>
+            </select>
+
+            <label for="list4">⏰HappenedTime</label>
+            <select id="list4">
+                <option value="0">10min ago</option>
+                <option value="1">30min ago</option>
+                <option value="2">30~60 min</option>
+                <option value="3">1~2 hour</option>
+                <option value="4">2~8 hour</option>
+                <option value="5">over 8 hour</option>
+            </select>
+
+            <input type="text" id="alertMsg" maxlength="10" placeholder="Max 10 bytes">
+            <div class="button-group">
+                <button onclick="deliverSOS()">SOS Alert nearby</button>
+                <button onclick="closeForm('sos-form')">Close ❌</button>
+            </div>
+            <div class="mac-group">
+                <div class="mac-inputs">
+                    <label>Enter MAC Address (Decimal or Hex):</label><br>
+                    <input type="text" id="MAC_input1" placeholder="Byte 1">
+                    <input type="text" id="MAC_input2" placeholder="Byte 2">
+                    <input type="text" id="MAC_input3" placeholder="Byte 3">
+                    <input type="text" id="MAC_input4" placeholder="Byte 4">
+                    <input type="text" id="MAC_input5" placeholder="Byte 5">
+                    <input type="text" id="MAC_input6" placeholder="Byte 6">
+                </div>
+
+                <div class="rgb-inputs">
+                    <label>RGB Values:</label><br>
+                    <input type="number" id="inputR" placeholder="R (0-255)" min="0" max="255">
+                    <input type="number" id="inputG" placeholder="G (0-255)" min="0" max="255">
+                    <input type="number" id="inputB" placeholder="B (0-255)" min="0" max="255">
+                </div>
+
+                <div class="mac-options">
+                    <label>
+                        <input type="checkbox" id="enableMAC"> Enable MAC
+                    </label>
+                </div>
+                <button onclick="Find()">Send MAC Data</button>
+                <button onclick="ackSOS()">ACK SOS</button>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="control-panel">
+            <button id="SOS-btn">🆘</button>
+            <button id="Search-btn">👀</button>
+            <button id="IoT-btn">🤖</button>
+            <button id="invite-btn">✨</button>
+            <button id="pic-btn">📷</button>
+            <button id="file-btn">🗂️</button>
+            <button id="GPS-btn">🌎</button>
+            <button id="dial-btn">📞</button>
+            <button id="addMeb-btn">👫</button>
+            <button id="del-btn">❎</button>
+            <button id="leave-btn">❌</button>
+            <input type="file" id="imageInput" style="display: none">
+        </div>
+
+        <div class="input-box-container">
+            <input class="input-box" id="input-box" maxlength="200" placeholder="Type a message...">
+            <button id="send-btn">Send</button>
+        </div>
+
+        <div class="cartoon-bar">
+            <div class="segment valid" id="valid"></div>
+            <div class="segment invalid" id="invalid"></div>
+            <div class="segment error" id="error"></div>
+        </div>
+    </div>
+
+
+
+    <script src="chat.js"></script>
+</body>
+
+</html>
