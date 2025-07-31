@@ -48,7 +48,4 @@ FT Telecom is built to be **practical, accessible, and useful**. It’s not just
 
 Whether you're exploring new places, working in the field, or just want a backup way to stay in touch, **FT Telecom gives you the tools to communicate clearly and reliably**—while also supporting sustainability and economic development.
 
- 
-<iframe width="800" height="450" src="https://github.com/FT-tele/FT/blob/main/SOS_drone.mp4?raw=tru" frameborder="0" allowfullscreen></iframe>
-  
 ...
