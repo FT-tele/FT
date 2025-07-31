@@ -47,3 +47,10 @@ By **combining off-grid telecom with IoT networks**, FT Telecom creates a flexib
 FT Telecom is built to be **practical, accessible, and useful**. It’s not just a device—it’s a system that helps people **stay safe, find support, and connect with others**, even in places where regular networks don’t reach.
 
 Whether you're exploring new places, working in the field, or just want a backup way to stay in touch, **FT Telecom gives you the tools to communicate clearly and reliably**—while also supporting sustainability and economic development.
+
+ 
+<video width="800" controls>
+  <source src="https://github.com/FT-tele/FT/blob/main/SOS_drone.mp4?raw=true" type="video/mp4">
+</video>
+ 
+...
