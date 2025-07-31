@@ -11,9 +11,7 @@
 
 
 uint8_t cipherAudio = 0;
-
-uint8_t PhoneIV[HKEY];
-uint8_t PhoneKey[KEY];
+ 
 
 int16_t audio_buffer[FRAME_SIZE];
 int16_t opus_pcm[FRAME_SIZE];
@@ -145,9 +143,7 @@ void phoneTask(void* pvParameters) {
   uint8_t tmpIV[HKEY];
 
 
-
-  memcpy(speakIV, PhoneIV, HKEY);
-  memcpy(speakKey, PhoneKey, KEY);
+ 
 
 
 

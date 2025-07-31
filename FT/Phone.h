@@ -20,7 +20,7 @@
 // Opus and ring buffer configuration
 #define MAX_OPUS_BYTES 128  // Must be power of 2
 #define RING_SIZE 31
-#define FRAME_SIZE ((AUDIO_SAMPLE_RATE * FRAME_MS) / 1000)  // 2880 samples per frame
+#define FRAME_SIZE 2880  // 2880 samples per frame
 #define OPUS_SIZE 1
 
 

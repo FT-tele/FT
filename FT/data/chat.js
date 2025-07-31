@@ -1913,7 +1913,7 @@ document.getElementById("SOS-btn").addEventListener("click", function () {
 
 
 document.getElementById("GPS-btn").addEventListener("click", function () {
-
+ 
     let oldestKey = null;
     let oldestData = null;
 
@@ -1926,7 +1926,7 @@ document.getElementById("GPS-btn").addEventListener("click", function () {
         }
     }
 
-
+ 
 
 
 
@@ -1969,27 +1969,35 @@ function downloadSensorGroupKey() {
 
 
 
+
 function Find() {
     const ids = ['MAC_input1', 'MAC_input2', 'MAC_input3', 'MAC_input4', 'MAC_input5', 'MAC_input6'];
     const macBytes = [];
-    const macHexStrings = [];
     let hasError = false;
 
     ids.forEach((id, index) => {
         const input = document.getElementById(id);
         const val = input.value.trim();
+        let byteVal;
 
-        // Always treat input as hex
-        const byteVal = parseInt(val, 16);
-
-        if (isNaN(byteVal) || byteVal < 0 || byteVal > 255) {
-            hasError = true;
-            console.log(`❌ Input ${index + 1} invalid or out of range: "${val}"`);
-            input.style.border = '2px solid red';
-        } else {
+        if (/^[0-9]{1,3}$/.test(val)) {
+            byteVal = parseInt(val);
+            if (byteVal < 0 || byteVal > 255) {
+                hasError = true;
+                console.log(`❌ Input ${index + 1} out of decimal range: ${val}`);
+                input.style.border = '2px solid red';
+            } else {
+                macBytes.push(byteVal);
+                input.style.border = '';
+            }
+        } else if (/^[0-9A-Fa-f]{2}$/.test(val)) {
+            byteVal = parseInt(val, 16);
             macBytes.push(byteVal);
-            macHexStrings.push(byteVal.toString(16).padStart(2, '0').toUpperCase());
             input.style.border = '';
+        } else {
+            hasError = true;
+            console.log(`❌ Input ${index + 1} has invalid format: ${val}`);
+            input.style.border = '2px solid red';
         }
     });
 
@@ -1998,50 +2006,61 @@ function Find() {
         return;
     }
 
-    // Debug: show final MAC address in HEX
-    console.log("🔷 MAC Address (Hex):", macHexStrings.join(':'));
+    const inputR = document.getElementById("inputR");
+    const inputG = document.getElementById("inputG");
+    const inputB = document.getElementById("inputB");
 
-    const getColorComponent = (id) => {
-        const val = parseInt(document.getElementById(id).value);
-        return Math.max(0, Math.min(255, isNaN(val) ? 0 : val));
-    };
 
-    const r = getColorComponent("inputR");
-    const g = getColorComponent("inputG");
-    const b = getColorComponent("inputB");
+    const r = Math.min(255, Math.max(0, parseInt(inputR.value) || 0));
+    const g = Math.min(255, Math.max(0, parseInt(inputG.value) || 0));
+    const b = Math.min(255, Math.max(0, parseInt(inputB.value) || 0));
+    //console.log(`RGB values: R=${r}, G=${g}, B=${b}`);
+    // You can add code here to update the color preview, send data, etc.
 
-    const checkboxByte = document.getElementById('enableMAC').checked ? 1 : 0;
 
-    macBytes.push(checkboxByte, r, g, b);
+
+    // Add 7th byte based on checkbox
+    const checkbox = document.getElementById('enableMAC');
+    const checkboxByte = checkbox.checked ? 1 : 0;
+    macBytes.push(checkboxByte);
+    macBytes.push(r, g, b);
+
+    // const MacArray = new Uint8Array(macBytes);
     const header = [2, 0, 2];
     const finalPayload = new Uint8Array([...header, ...macBytes]);
-
     ws.send(finalPayload);
-    console.log("✅ Payload sent:", finalPayload);
+
+
 }
-
-
 
 function ackSOS() {
     const ids = ['MAC_input1', 'MAC_input2', 'MAC_input3', 'MAC_input4', 'MAC_input5', 'MAC_input6'];
     const macBytes = [];
     let hasError = false;
- const macHexStrings = [];
+
     ids.forEach((id, index) => {
         const input = document.getElementById(id);
         const val = input.value.trim();
+        let byteVal;
 
-        // Always treat input as hex
-        const byteVal = parseInt(val, 16);
-
-        if (isNaN(byteVal) || byteVal < 0 || byteVal > 255) {
-            hasError = true;
-            console.log(`❌ Input ${index + 1} invalid or out of range: "${val}"`);
-            input.style.border = '2px solid red';
-        } else {
+        if (/^[0-9]{1,3}$/.test(val)) {
+            byteVal = parseInt(val);
+            if (byteVal < 0 || byteVal > 255) {
+                hasError = true;
+                console.log(`❌ Input ${index + 1} out of decimal range: ${val}`);
+                input.style.border = '2px solid red';
+            } else {
+                macBytes.push(byteVal);
+                input.style.border = '';
+            }
+        } else if (/^[0-9A-Fa-f]{2}$/.test(val)) {
+            byteVal = parseInt(val, 16);
             macBytes.push(byteVal);
-            macHexStrings.push(byteVal.toString(16).padStart(2, '0').toUpperCase());
             input.style.border = '';
+        } else {
+            hasError = true;
+            console.log(`❌ Input ${index + 1} has invalid format: ${val}`);
+            input.style.border = '2px solid red';
         }
     });
 
@@ -2050,19 +2069,18 @@ function ackSOS() {
         return;
     }
 
-    // Checkbox flag
+    // Add 7th byte based on checkbox
     const checkbox = document.getElementById('enableMAC');
     const checkboxByte = checkbox.checked ? 1 : 0;
     macBytes.push(checkboxByte);
 
-    // Payload build
+    // const MacArray = new Uint8Array(macBytes);
     const header = [2, 0, 4];
     const finalPayload = new Uint8Array([...header, ...macBytes]);
-
     ws.send(finalPayload);
-    console.log("✅ ackSOS payload sent:", finalPayload);
-}
 
+
+}
 
 
 document.getElementById("del-btn").addEventListener("click", function () {

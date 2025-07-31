@@ -9,7 +9,7 @@
 //-------------------------------------------------------hardware
 
 #define CORE0 0
-#define CORE1 1
+#define CORE1 0
 
 //-----------------------------LLCC68
 #define NssPin 10
@@ -283,9 +283,7 @@ extern volatile uint8_t LastMeetingB;  // last meeting id for active
 extern uint8_t GreetingCode[OCT];
 extern bool SandboxFlag;
 
-
-
-extern uint8_t FavoriteList[6][OCT];
+ 
 
 //-----------------------------Contact
 

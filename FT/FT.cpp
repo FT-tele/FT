@@ -701,9 +701,9 @@ bool initInfrast() {
 
       return true;
     }
-    
-      esp_efuse_mac_get_default(FavoriteMAC[0]);
-      esp_read_mac(FavoriteMAC[0], ESP_MAC_WIFI_SOFTAP);
+
+    esp_efuse_mac_get_default(FavoriteMAC[0]);
+    esp_read_mac(FavoriteMAC[0], ESP_MAC_WIFI_SOFTAP);
   }
 }
 
@@ -876,422 +876,439 @@ void transformTask(void *pvParameters) {
 
         case BIT_PHO:  // PayloadData:code,frameLen1,frameLen2,frame1_v,frame2_v
           {
-            if (TurnOnWifi) {
-              webSocket.broadcastBIN(PayloadData[tk_idx], PktLen[tk_idx]);
-            } else {
-              Serial.printf(" listening    %d \n.", PktLen[tk_idx]);
-              firstOpus = PayloadData[tk_idx][1];
-              memcpy(frame_buffer[frameIdx], &PayloadData[tk_idx][3], firstOpus);
-              frame_len[frameIdx] = firstOpus;
-              xQueueSend(listenQueue, &frameIdx, portMAX_DELAY);
-              frameIdx = (frameIdx + 1) & 31;
-              frame_len[frameIdx] = PayloadData[tk_idx][2];
-              memcpy(frame_buffer[frameIdx], &PayloadData[tk_idx][firstOpus + 3], PayloadData[tk_idx][2]);
-              xQueueSend(listenQueue, &frameIdx, portMAX_DELAY);
-              frameIdx = (frameIdx + 1) & 31;
+            if (TrafficDensity < 11) {
+              if (TurnOnWifi) {
+                webSocket.broadcastBIN(PayloadData[tk_idx], PktLen[tk_idx]);
+              } else {
+                Serial.printf(" listening    %d \n.", PktLen[tk_idx]);
+                firstOpus = PayloadData[tk_idx][1];
+                memcpy(frame_buffer[frameIdx], &PayloadData[tk_idx][3], firstOpus);
+                frame_len[frameIdx] = firstOpus;
+                xQueueSend(listenQueue, &frameIdx, portMAX_DELAY);
+                frameIdx = (frameIdx + 1) & 31;
+                frame_len[frameIdx] = PayloadData[tk_idx][2];
+                memcpy(frame_buffer[frameIdx], &PayloadData[tk_idx][firstOpus + 3], PayloadData[tk_idx][2]);
+                xQueueSend(listenQueue, &frameIdx, portMAX_DELAY);
+                frameIdx = (frameIdx + 1) & 31;
+              }
             }
           }
           break;
         case BIT_ALT:  // PayloadData:code,direction,type{button_SOS 0/page_SOS 1/find 2/ackFind 4},SrcMac_6,DstMac_6,originMac_6,metadata_v
           {
+            if (TrafficDensity < 11) {
 
 
 
-            if (TurnOnWifi) {
-              webSocket.broadcastBIN(PayloadData[tk_idx], PktLen[tk_idx]);
-            }
-            //show in oled
-
-
-            if (PayloadData[tk_idx][1] == 0)
-              alt_offset = 0;
-            else
-              alt_offset = 12;
-
-            memcpy(alt_src_mac, &PayloadData[tk_idx][3 + alt_offset], 6);
-            //check is my favorite contact
-            for (checkFav = 0; checkFav < OCT; checkFav++) {
-              checkFavorite = compareID(alt_src_mac, FavoriteMAC[checkFav], 6);
-              if (checkFavorite) {
-                 checkFavList = checkFav;
-                break;
-              } else {
-                checkFavList = 9;
+              if (TurnOnWifi) {
+                webSocket.broadcastBIN(PayloadData[tk_idx], PktLen[tk_idx]);
               }
-            }
-
-            if (PayloadData[tk_idx][1] < 4) {
-              sosType = PayloadData[tk_idx][2];
-              switch (sosType) {
+              //show in oled
 
 
-                case 2:
-                  {
-                    // find  rgb beeper
-                    if (checkFavList == 0) {
-                      //locate flash and beeper ,report ack sensor(GPS\HBR)
+              if (PayloadData[tk_idx][1] == 0)
+                alt_offset = 0;
+              else
+                alt_offset = 12;
 
-                      // EnterSOS = 1;
-                      digitalWrite(BEEPER, HIGH);
+              memcpy(alt_src_mac, &PayloadData[tk_idx][3 + alt_offset], 6);
+              //check is my favorite contact
+              for (checkFav = 0; checkFav < OCT; checkFav++) {
+                checkFavorite = compareID(alt_src_mac, FavoriteMAC[checkFav], 6);
+                if (checkFavorite) {
+                  checkFavList = checkFav;
+                  break;
+                } else {
+                  checkFavList = 9;
+                }
+              }
 
-                      Serial.printf("  search sos : %d\n", PayloadData[tk_idx][2]);
-                      LedRed = PayloadData[tk_idx][10 + alt_offset];
-                      LedGreen = PayloadData[tk_idx][11 + alt_offset];
-                      LedBlue = PayloadData[tk_idx][12 + alt_offset];
-                      vTaskDelay(pdMS_TO_TICKS(3000));
-                      digitalWrite(BEEPER, LOW);
+              if (PayloadData[tk_idx][1] < 4) {
+                sosType = PayloadData[tk_idx][2];
+                switch (sosType) {
 
-                      String sosStr = "";
-                      memset(WsQueue[0].payloadData, 0, PKT);
-                      WsQueue[0].payloadData[0] = 2;
-                      WsQueue[0].payloadData[1] = 0;
-                      WsQueue[0].payloadData[2] = 3;
-                      WsQueue[0].payloadData[10] = '*';
-                      GPSjson["W"] = 1;  //sos gps
-                      memcpy(&WsQueue[0].payloadData[3], FavoriteMAC[0], 6);
-                      serializeJson(GPSjson, sosStr);
-                      WsQueue[0].pktLen = sosStr.length() + 1;
-                      sosStr.getBytes((unsigned char *)&WsQueue[0].payloadData[11], WsQueue[0].pktLen);
-                      WsQueue[0].pktLen = WsQueue[0].pktLen + 11;
 
-                      while (digitalRead(BusyPin) == HIGH || rfMode == false) {
-                        taskYIELD();
-                        vTaskDelay(pdMS_TO_TICKS(100));
+                  case 2:
+                    {
+                      // find  rgb beeper
+                      if (checkFavList == 0) {
+                        //locate flash and beeper ,report ack sensor(GPS\HBR)
+
+                        // EnterSOS = 1;
+                        digitalWrite(BEEPER, HIGH);
+
+                        Serial.printf("  search sos : %d\n", PayloadData[tk_idx][2]);
+                        LedRed = PayloadData[tk_idx][10 + alt_offset];
+                        LedGreen = PayloadData[tk_idx][11 + alt_offset];
+                        LedBlue = PayloadData[tk_idx][12 + alt_offset];
+                        vTaskDelay(pdMS_TO_TICKS(3000));
+                        digitalWrite(BEEPER, LOW);
+
+                        String sosStr = "";
+                        memset(WsQueue[0].payloadData, 0, PKT);
+                        WsQueue[0].payloadData[0] = 2;
+                        WsQueue[0].payloadData[1] = 0;
+                        WsQueue[0].payloadData[2] = 3;
+                        WsQueue[0].payloadData[10] = '*';
+                        GPSjson["W"] = 1;  //sos gps
+                        memcpy(&WsQueue[0].payloadData[3], FavoriteMAC[0], 6);
+                        serializeJson(GPSjson, sosStr);
+                        WsQueue[0].pktLen = sosStr.length() + 1;
+                        sosStr.getBytes((unsigned char *)&WsQueue[0].payloadData[11], WsQueue[0].pktLen);
+                        WsQueue[0].pktLen = WsQueue[0].pktLen + 11;
+
+                        while (digitalRead(BusyPin) == HIGH || rfMode == false) {
+                          taskYIELD();
+                          vTaskDelay(pdMS_TO_TICKS(100));
+                        }
+                        TransmitState = radio.startTransmit(WsQueue[0].payloadData, WsQueue[0].pktLen);
                       }
-                      TransmitState = radio.startTransmit(WsQueue[0].payloadData, WsQueue[0].pktLen);
                     }
-                  }
-                  break;
+                    break;
 
 
-                case 3:
-                  {
-                    //taking HBR 
-                  }
-                  break;
-
-                case 4:  //ack
-                  {
-                    if (checkFavList == 0) {  //get trigger ACK
-                      Serial.printf("  ACK sos : %d\n", PayloadData[tk_idx][2]);
-                      EnterSOS = 2;
-                      digitalWrite(BEEPER, HIGH);
-                      vTaskDelay(pdMS_TO_TICKS(1000));
-                      digitalWrite(BEEPER, LOW);
-                      vTaskDelay(pdMS_TO_TICKS(1000));
-                      digitalWrite(BEEPER, HIGH);
-                      vTaskDelay(pdMS_TO_TICKS(1000));
-                      digitalWrite(BEEPER, LOW);
+                  case 3:
+                    {
+                      //taking HBR
                     }
-                  }
-                  break;
+                    break;
 
-                default:  //0 or 1
-                  {
-                    sprintf(jsonStr, "%02X%02X%02X%02X%02X%02X ",
-
-                            PayloadData[tk_idx][3 + alt_offset],
-                            PayloadData[tk_idx][4 + alt_offset],
-                            PayloadData[tk_idx][5 + alt_offset],
-                            PayloadData[tk_idx][6 + alt_offset],
-                            PayloadData[tk_idx][7 + alt_offset],
-                            PayloadData[tk_idx][8 + alt_offset]);
-
-
-                    String sosMessage = "";
-
-                    if (checkFavList == 9) {
-                      //not my favorite ,beep
-                      sosMessage = " stranger ";
-                    } else {
-                      sosMessage = " favorite:" + checkFavList;
+                  case 4:  //ack
+                    {
+                      if (checkFavList == 0) {  //get trigger ACK
+                        Serial.printf("  ACK sos : %d\n", PayloadData[tk_idx][2]);
+                        EnterSOS = 2;
+                        digitalWrite(BEEPER, HIGH);
+                        vTaskDelay(pdMS_TO_TICKS(1000));
+                        digitalWrite(BEEPER, LOW);
+                        vTaskDelay(pdMS_TO_TICKS(1000));
+                        digitalWrite(BEEPER, HIGH);
+                        vTaskDelay(pdMS_TO_TICKS(1000));
+                        digitalWrite(BEEPER, LOW);
+                      }
                     }
+                    break;
 
-                    sosMessage = sosMessage + " MAC:" + String(jsonStr);
-                    uint8_t jsonStrtrLen = 0;
-                    if (sosType == 0) {
-                      sosMessage = sosMessage + "phoneSOS"
-                                   + ";type:" + PayloadData[tk_idx][9 + alt_offset] + ";fatal:" + PayloadData[tk_idx][10 + alt_offset]
-                                   + ";Trapped:" + PayloadData[tk_idx][11 + alt_offset] + ";Happened:" + PayloadData[tk_idx][12 + alt_offset];
-                      jsonStrtrLen = PktLen[tk_idx] - 13 - alt_offset;
-                      memcpy(jsonStr, &PayloadData[tk_idx][13 + alt_offset], jsonStrtrLen);
+                  default:  //0 or 1
+                    {
+                      sprintf(jsonStr, "%02X%02X%02X%02X%02X%02X ",
 
-                    } else {
-                      sosMessage = sosMessage + "watchSOS!";
-                      jsonStrtrLen = PktLen[tk_idx] - 10 - alt_offset;
-                      memcpy(jsonStr, &PayloadData[tk_idx][10 + alt_offset], jsonStrtrLen);
+                              PayloadData[tk_idx][3 + alt_offset],
+                              PayloadData[tk_idx][4 + alt_offset],
+                              PayloadData[tk_idx][5 + alt_offset],
+                              PayloadData[tk_idx][6 + alt_offset],
+                              PayloadData[tk_idx][7 + alt_offset],
+                              PayloadData[tk_idx][8 + alt_offset]);
+
+
+                      String sosMessage = "";
+
+                      if (checkFavList == 9) {
+                        //not my favorite ,beep
+                        sosMessage = " stranger ";
+                      } else {
+                        sosMessage = " favorite:" + checkFavList;
+                      }
+
+                      sosMessage = sosMessage + " MAC:" + String(jsonStr);
+                      uint8_t jsonStrtrLen = 0;
+                      if (sosType == 0) {
+                        sosMessage = sosMessage + "phoneSOS"
+                                     + ";type:" + PayloadData[tk_idx][9 + alt_offset] + ";fatal:" + PayloadData[tk_idx][10 + alt_offset]
+                                     + ";Trapped:" + PayloadData[tk_idx][11 + alt_offset] + ";Happened:" + PayloadData[tk_idx][12 + alt_offset];
+                        jsonStrtrLen = PktLen[tk_idx] - 13 - alt_offset;
+                        memcpy(jsonStr, &PayloadData[tk_idx][13 + alt_offset], jsonStrtrLen);
+
+                      } else {
+                        sosMessage = sosMessage + "watchSOS!";
+                        jsonStrtrLen = PktLen[tk_idx] - 10 - alt_offset;
+                        memcpy(jsonStr, &PayloadData[tk_idx][10 + alt_offset], jsonStrtrLen);
+                      }
+                      String gpsDataJson = String((char *)&jsonStr);
+                      sosMessage = sosMessage + " GPS:" + gpsDataJson;
+                      memset(MsgLoop[alertIdx], 0, PKT);
+                      jsonStrtrLen = min((size_t)(sosMessage.length() + 1), (size_t)(PKT - 1));
+                      sosMessage.getBytes((unsigned char *)MsgLoop[alertIdx], sosMessage.length() + 1);
+                      alertIdx = (alertIdx + 1) & 3;
+
+                      //button_SOS
                     }
-                    String gpsDataJson = String((char *)&jsonStr);
-                    sosMessage = sosMessage + " GPS:" + gpsDataJson;
-                    memset(MsgLoop[alertIdx], 0, PKT);
-                    jsonStrtrLen = min((size_t)(sosMessage.length() + 1), (size_t)(PKT - 1));
-                    sosMessage.getBytes((unsigned char *)MsgLoop[alertIdx], sosMessage.length() + 1);
-                    alertIdx = (alertIdx + 1) & 3;
-
-                    //button_SOS
-                  }
-                  break;
+                    break;
+                }
               }
+
+
+              //
             }
-
-
-            //
           }
           break;
         case BIT_SSN:  // PayloadData:code,subType{GRT/CFM/TNL/IVM},metadata_v{cipheredKeyExchangeData/uncipherdPublicKey}
           {
-            if (TurnOnWifi) {
-              uint8_t gretType = PayloadData[tk_idx][1];
-              switch (gretType) {
-                case GRT:
-                  {
+            if (TrafficDensity < 10) {
+              {
+                if (TurnOnWifi) {
+                  uint8_t gretType = PayloadData[tk_idx][1];
+                  switch (gretType) {
+                    case GRT:
+                      {
 
-                    uint8_t grtLen = PayloadData[tk_idx][42];
-                    Serial.printf("rcvGreeting %d  FT.PayloadData:%s  ", grtLen, PayloadData[tk_idx]);
-                    if (grtLen == PktLen[tk_idx] - 43) {
-                      to_web[0] = SSN;
-                      to_web[1] = GRT;  // older version front  is 41
-                      to_web[2] = GreetingIndex;
-                      to_web_len = grtLen + 3;
-                      memcpy(&to_web[3], &PayloadData[tk_idx][43], grtLen);
-                      memcpy(GreetingList[GreetingIndex].invitation, &PayloadData[tk_idx][2], OCT);
-                      memcpy(GreetingList[GreetingIndex].publicKey, &PayloadData[tk_idx][10], KEY);
-                      GreetingList[GreetingIndex].status = 1;
-                      GreetingIndex = (GreetingIndex + 1) & 15;
-                      webSocket.broadcastBIN(to_web, to_web_len);
-                    }
-                  }
-                  break;
-
-                case CFM:
-                  {
-
-                    uint8_t rcvCmf[OCT];
-                    uint8_t cfmSharedKey[KEY];
-                    uint8_t rcvKey[KEY];
-                    cipher_len = PktLen[tk_idx] - 58;
-                    memcpy(rcvCmf, &PayloadData[tk_idx][2], OCT);
-                    memcpy(myPrivateKey, myPrivate, KEY);
-                    bool invCheck = false;
-                    invCheck = compareID(rcvCmf, GreetingCode, OCT);
-                    vTaskDelay(50 / portTICK_PERIOD_MS);
-                    //Serial.printf(" GreetingCode .invCheck  %d \n.", invCheck);
-                    if (invCheck) {
-                      memcpy(rcvKey, &PayloadData[tk_idx][10], KEY);
-                      memcpy(rcv_IV, &PayloadData[tk_idx][42], HKEY);
-                      memcpy(rcv_ciphered, &PayloadData[tk_idx][58], cipher_len);
-                      ConfirmIndex = (ConfirmIndex + 1) & 15;
-                      ConfirmList[ConfirmIndex].status = 1;
-                      GenerateSharedKey(myPrivateKey, rcvKey, cfmSharedKey);
-                      vTaskDelay(50 / portTICK_PERIOD_MS);
-                      memcpy(ConfirmList[ConfirmIndex].sharedKey, cfmSharedKey, KEY);
-                      aes_decipher(rcv_ciphered, cipher_len, rcv_decipher, cfmSharedKey, rcv_IV, &decipher_len);
-                      Serial.printf(" after aes_decipher %d \n.", decipher_len);
-                      memcpy(ConfirmList[ConfirmIndex].idIndex, rcv_decipher, 2);
-                      memcpy(ConfirmList[ConfirmIndex].sessionId, &rcv_decipher[2], OCT);
-                      memcpy(&to_web[3], &rcv_decipher[10], decipher_len - 10);
-                      to_web[0] = SSN;
-                      to_web[1] = CFM;  //older v is 2
-                      to_web[2] = ConfirmIndex;
-                      to_web_len = decipher_len - 7;
-                      webSocket.broadcastBIN(to_web, to_web_len);
-                    }
-                  }
-                  break;
-                case TNL:
-                  {
-                    Serial.println("rcvTunnel  FT.");
-                    uint8_t rcvTunIdx = PayloadData[tk_idx][3];
-                    memcpy(RcvBuddy, &PayloadData[tk_idx][FOUR], OCT);
-                    bool invCheck = false;
-                    invCheck = compareID(RcvBuddy, WhisperList[rcvTunIdx].sessionId, OCT);
-                    if (invCheck && WhisperList[rcvTunIdx].status == 1) {
-                      uint8_t rcv_IV[HKEY];
-                      uint8_t rcv_ciphered[KEY];
-                      uint8_t rcv_decipher[KEY];
-                      uint8_t decipher_len = 0;
-                      uint8_t cipher_len = PktLen[tk_idx] - 28;
-                      memcpy(rcv_IV, &PayloadData[tk_idx][12], HKEY);
-                      memcpy(rcv_ciphered, &PayloadData[tk_idx][28], cipher_len);
-                      aes_decipher(rcv_ciphered, cipher_len, rcv_decipher, WhisperList[rcvTunIdx].sharedKey, rcv_IV, &decipher_len);
-                      memcpy(WhisperList[rcvTunIdx].buddyIndex, rcv_decipher, 2);
-                      memcpy(WhisperList[rcvTunIdx].buddy, &rcv_decipher[2], OCT);
-                      while (WhisperAdd)
-                        vTaskDelay(pdMS_TO_TICKS(10));
-                      WhisperAdd = true;
-                      WhisperNum++;
-                      WhisperMsgId++;
-                      WhisperList[rcvTunIdx].msgId = WhisperMsgId;
-                      WhisperList[rcvTunIdx].status = 3;
-                      memcpy(&WhisperList[rcvTunIdx].lowId, WhisperList[rcvTunIdx].sessionId, FOUR);
-                      memcpy(&WhisperList[rcvTunIdx].highId, &WhisperList[rcvTunIdx].sessionId[FOUR], FOUR);
-                      vTaskDelay(pdMS_TO_TICKS(10));
-                      // send new whisper json
-                      WhisperAdd = false;
-                    }
-                  }
-                  break;
-
-                case IVM:
-                  {
-
-                    //Serial.println("rcv IVM   .");
-                    RcvIndex = PayloadData[tk_idx][3];
-                    memcpy(&RcvLow, &PayloadData[tk_idx][FOUR], FOUR);  // Copy first 4 bytes
-                    memcpy(&RcvHigh, &PayloadData[tk_idx][OCT], FOUR);  // Copy last 4 bytes
-                    WhsCheck = idMatch(RcvLow, RcvHigh, WhisperList[RcvIndex].lowId, WhisperList[RcvIndex].highId);
-                    if (WhsCheck) {
-
-                      memcpy(rcv_IV, &PayloadData[tk_idx][12], HKEY);
-                      aes_decipher(&PayloadData[tk_idx][28], PktLen[tk_idx] - 28, to_web, WhisperList[RcvIndex].sharedKey, rcv_IV, &decipher_len);
-                      //WhisperList[SndIndex].sessionId
-                      uint8_t whs_Buddy[OCT];
-                      memcpy(whs_Buddy, &to_web[40], OCT);
-                      bool ivm_check = false;
-                      ivm_check = compareID(whs_Buddy, WhisperList[RcvIndex].buddy, OCT);
-                      if (ivm_check) {
-                        //Serial.println("match   IVM.");
-                        while (MeetingAdd)
-                          vTaskDelay(pdMS_TO_TICKS(10));
-                        MeetingAdd = true;
-                        while (MeetingList[MeetingTopIndex].status == 3)
-                          MeetingTopIndex = (MeetingTopIndex + 1) & 255;
-                        MeetingMsgId++;
-                        MeetingNew = MeetingTopIndex;
-                        MeetingList[MeetingNew].msgId = MeetingMsgId;
-                        MeetingList[MeetingNew].status = 3;
-                        memcpy(MeetingList[MeetingNew].sessionId, to_web, OCT);
-                        memcpy(MeetingList[MeetingNew].sharedKey, &to_web[OCT], KEY);
-                        memcpy(MeetingList[MeetingNew].name, WhisperList[RcvIndex].name, WhisperList[RcvIndex].nameLen);
-                        MeetingList[MeetingNew].nameLen = WhisperList[RcvIndex].nameLen;
-                        MeetingNum++;
-                        JsonDocument meetingNotify;
-                        String meetingNotifyStr = "";
-                        JsonDocument sessionArrayJson;
-                        meetingNotify["T"] = 2;
-                        JsonArray meetingArray = meetingNotify["MeetingList"].to<JsonArray>();
-                        String created_Name = String((char *)MeetingList[MeetingNew].name);
-                        sessionArrayJson["name"] = created_Name;
-                        sessionArrayJson["msgId"] = MeetingList[MeetingNew].msgId;
-                        sessionArrayJson["sessionId"] = MeetingNew;
-                        meetingArray.add(sessionArrayJson);
-                        serializeJson(meetingNotify, meetingNotifyStr);
-                        webSocket.broadcastTXT(meetingNotifyStr);
-                        MeetingAdd = false;
-                        MeetingNew = 0;
-                        memcpy(&MeetingList[RcvIndex].lowId, MeetingList[RcvIndex].sessionId, FOUR);
-                        memcpy(&MeetingList[RcvIndex].highId, &MeetingList[RcvIndex].sessionId[FOUR], FOUR);
+                        uint8_t grtLen = PayloadData[tk_idx][42];
+                        Serial.printf("rcvGreeting %d  FT.PayloadData:%s  ", grtLen, PayloadData[tk_idx]);
+                        if (grtLen == PktLen[tk_idx] - 43) {
+                          to_web[0] = SSN;
+                          to_web[1] = GRT;  // older version front  is 41
+                          to_web[2] = GreetingIndex;
+                          to_web_len = grtLen + 3;
+                          memcpy(&to_web[3], &PayloadData[tk_idx][43], grtLen);
+                          memcpy(GreetingList[GreetingIndex].invitation, &PayloadData[tk_idx][2], OCT);
+                          memcpy(GreetingList[GreetingIndex].publicKey, &PayloadData[tk_idx][10], KEY);
+                          GreetingList[GreetingIndex].status = 1;
+                          GreetingIndex = (GreetingIndex + 1) & 15;
+                          webSocket.broadcastBIN(to_web, to_web_len);
+                        }
                       }
-                    }
-                    break;
+                      break;
+
+                    case CFM:
+                      {
+
+                        uint8_t rcvCmf[OCT];
+                        uint8_t cfmSharedKey[KEY];
+                        uint8_t rcvKey[KEY];
+                        cipher_len = PktLen[tk_idx] - 58;
+                        memcpy(rcvCmf, &PayloadData[tk_idx][2], OCT);
+                        memcpy(myPrivateKey, myPrivate, KEY);
+                        bool invCheck = false;
+                        invCheck = compareID(rcvCmf, GreetingCode, OCT);
+                        vTaskDelay(50 / portTICK_PERIOD_MS);
+                        //Serial.printf(" GreetingCode .invCheck  %d \n.", invCheck);
+                        if (invCheck) {
+                          memcpy(rcvKey, &PayloadData[tk_idx][10], KEY);
+                          memcpy(rcv_IV, &PayloadData[tk_idx][42], HKEY);
+                          memcpy(rcv_ciphered, &PayloadData[tk_idx][58], cipher_len);
+                          ConfirmIndex = (ConfirmIndex + 1) & 15;
+                          ConfirmList[ConfirmIndex].status = 1;
+                          GenerateSharedKey(myPrivateKey, rcvKey, cfmSharedKey);
+                          vTaskDelay(50 / portTICK_PERIOD_MS);
+                          memcpy(ConfirmList[ConfirmIndex].sharedKey, cfmSharedKey, KEY);
+                          aes_decipher(rcv_ciphered, cipher_len, rcv_decipher, cfmSharedKey, rcv_IV, &decipher_len);
+                          Serial.printf(" after aes_decipher %d \n.", decipher_len);
+                          memcpy(ConfirmList[ConfirmIndex].idIndex, rcv_decipher, 2);
+                          memcpy(ConfirmList[ConfirmIndex].sessionId, &rcv_decipher[2], OCT);
+                          memcpy(&to_web[3], &rcv_decipher[10], decipher_len - 10);
+                          to_web[0] = SSN;
+                          to_web[1] = CFM;  //older v is 2
+                          to_web[2] = ConfirmIndex;
+                          to_web_len = decipher_len - 7;
+                          webSocket.broadcastBIN(to_web, to_web_len);
+                        }
+                      }
+                      break;
+                    case TNL:
+                      {
+                        Serial.println("rcvTunnel  FT.");
+                        uint8_t rcvTunIdx = PayloadData[tk_idx][3];
+                        memcpy(RcvBuddy, &PayloadData[tk_idx][FOUR], OCT);
+                        bool invCheck = false;
+                        invCheck = compareID(RcvBuddy, WhisperList[rcvTunIdx].sessionId, OCT);
+                        if (invCheck && WhisperList[rcvTunIdx].status == 1) {
+                          uint8_t rcv_IV[HKEY];
+                          uint8_t rcv_ciphered[KEY];
+                          uint8_t rcv_decipher[KEY];
+                          uint8_t decipher_len = 0;
+                          uint8_t cipher_len = PktLen[tk_idx] - 28;
+                          memcpy(rcv_IV, &PayloadData[tk_idx][12], HKEY);
+                          memcpy(rcv_ciphered, &PayloadData[tk_idx][28], cipher_len);
+                          aes_decipher(rcv_ciphered, cipher_len, rcv_decipher, WhisperList[rcvTunIdx].sharedKey, rcv_IV, &decipher_len);
+                          memcpy(WhisperList[rcvTunIdx].buddyIndex, rcv_decipher, 2);
+                          memcpy(WhisperList[rcvTunIdx].buddy, &rcv_decipher[2], OCT);
+                          while (WhisperAdd)
+                            vTaskDelay(pdMS_TO_TICKS(10));
+                          WhisperAdd = true;
+                          WhisperNum++;
+                          WhisperMsgId++;
+                          WhisperList[rcvTunIdx].msgId = WhisperMsgId;
+                          WhisperList[rcvTunIdx].status = 3;
+                          memcpy(&WhisperList[rcvTunIdx].lowId, WhisperList[rcvTunIdx].sessionId, FOUR);
+                          memcpy(&WhisperList[rcvTunIdx].highId, &WhisperList[rcvTunIdx].sessionId[FOUR], FOUR);
+                          vTaskDelay(pdMS_TO_TICKS(10));
+                          // send new whisper json
+                          WhisperAdd = false;
+                        }
+                      }
+                      break;
+
+                    case IVM:
+                      {
+
+                        //Serial.println("rcv IVM   .");
+                        RcvIndex = PayloadData[tk_idx][3];
+                        memcpy(&RcvLow, &PayloadData[tk_idx][FOUR], FOUR);  // Copy first 4 bytes
+                        memcpy(&RcvHigh, &PayloadData[tk_idx][OCT], FOUR);  // Copy last 4 bytes
+                        WhsCheck = idMatch(RcvLow, RcvHigh, WhisperList[RcvIndex].lowId, WhisperList[RcvIndex].highId);
+                        if (WhsCheck) {
+
+                          memcpy(rcv_IV, &PayloadData[tk_idx][12], HKEY);
+                          aes_decipher(&PayloadData[tk_idx][28], PktLen[tk_idx] - 28, to_web, WhisperList[RcvIndex].sharedKey, rcv_IV, &decipher_len);
+                          //WhisperList[SndIndex].sessionId
+                          uint8_t whs_Buddy[OCT];
+                          memcpy(whs_Buddy, &to_web[40], OCT);
+                          bool ivm_check = false;
+                          ivm_check = compareID(whs_Buddy, WhisperList[RcvIndex].buddy, OCT);
+                          if (ivm_check) {
+                            //Serial.println("match   IVM.");
+                            while (MeetingAdd)
+                              vTaskDelay(pdMS_TO_TICKS(10));
+                            MeetingAdd = true;
+                            while (MeetingList[MeetingTopIndex].status == 3)
+                              MeetingTopIndex = (MeetingTopIndex + 1) & 255;
+                            MeetingMsgId++;
+                            MeetingNew = MeetingTopIndex;
+                            MeetingList[MeetingNew].msgId = MeetingMsgId;
+                            MeetingList[MeetingNew].status = 3;
+                            memcpy(MeetingList[MeetingNew].sessionId, to_web, OCT);
+                            memcpy(MeetingList[MeetingNew].sharedKey, &to_web[OCT], KEY);
+                            memcpy(MeetingList[MeetingNew].name, WhisperList[RcvIndex].name, WhisperList[RcvIndex].nameLen);
+                            MeetingList[MeetingNew].nameLen = WhisperList[RcvIndex].nameLen;
+                            MeetingNum++;
+                            JsonDocument meetingNotify;
+                            String meetingNotifyStr = "";
+                            JsonDocument sessionArrayJson;
+                            meetingNotify["T"] = 2;
+                            JsonArray meetingArray = meetingNotify["MeetingList"].to<JsonArray>();
+                            String created_Name = String((char *)MeetingList[MeetingNew].name);
+                            sessionArrayJson["name"] = created_Name;
+                            sessionArrayJson["msgId"] = MeetingList[MeetingNew].msgId;
+                            sessionArrayJson["sessionId"] = MeetingNew;
+                            meetingArray.add(sessionArrayJson);
+                            serializeJson(meetingNotify, meetingNotifyStr);
+                            webSocket.broadcastTXT(meetingNotifyStr);
+                            MeetingAdd = false;
+                            MeetingNew = 0;
+                            memcpy(&MeetingList[RcvIndex].lowId, MeetingList[RcvIndex].sessionId, FOUR);
+                            memcpy(&MeetingList[RcvIndex].highId, &MeetingList[RcvIndex].sessionId[FOUR], FOUR);
+                          }
+                        }
+                        break;
+                      }
                   }
-              }
-              break;
-            }
-          }
-        case BIT_WSP:  // PayloadData:code,buddyIdx_2,buddyId_8,IV_16,cipheredData{type,len,metadata_v}
-          {
-            //Serial.println("rcvWhisper  FT.");
-
-            memcpy(&RcvLow, &PayloadData[tk_idx][3], FOUR);   // Copy first 4 bytes
-            memcpy(&RcvHigh, &PayloadData[tk_idx][7], FOUR);  // Copy last 4 bytes
-            WhsCheck = idMatch(RcvLow, RcvHigh, WhisperList[RcvIndex].lowId, WhisperList[RcvIndex].highId);
-
-            if (WhsCheck) {
-
-              to_web[0] = WSP;
-              to_web[1] = RcvIndex;
-              memcpy(rcv_IV, &PayloadData[tk_idx][11], HKEY);
-              aes_decipher(&PayloadData[tk_idx][27], PktLen[tk_idx] - 27, &to_web[2], WhisperList[RcvIndex].sharedKey, rcv_IV, &decipher_len);
-              to_web_len = decipher_len + 2;
-              if (TurnOnWifi) {
-
-                webSocket.broadcastBIN(to_web, to_web_len);
-              }
-
-              if (oledMsgShow == 1) {  //show in oled
-
-                // Serial.printf("whisper show in oled  to_web[3]. %d \n ", to_web[2]);
-                memset(MsgLoop[wspIdx], 0, PKT);
-                if (to_web[2] == TXT_MSG || to_web[2] == NTF_MSG) {
-                  memcpy(MsgLoop[wspIdx + FOUR], &to_web[2], to_web_len - 2);
-                  jsonStrtrLen = WhisperList[RcvIndex].nameLen;
-                  memcpy(MsgLoop[wspIdx + FOUR], WhisperList[RcvIndex].name, jsonStrtrLen);
-                  MsgLoop[wspIdx + FOUR][jsonStrtrLen] = ':';
-                  memcpy(&MsgLoop[wspIdx + FOUR][jsonStrtrLen + 1], &to_web[2], to_web_len - 2);
-                  wspIdx = (wspIdx + 1) & 3;
+                  break;
                 }
               }
-              //if (to_web[3] == GPS_MSG){}
+            }
+          }
+          break;
+        case BIT_WSP:  // PayloadData:code,buddyIdx_2,buddyId_8,IV_16,cipheredData{type,len,metadata_v}
+          {
+            if (TrafficDensity < 10) {
+              {
+                //Serial.println("rcvWhisper  FT.");
+
+                memcpy(&RcvLow, &PayloadData[tk_idx][3], FOUR);   // Copy first 4 bytes
+                memcpy(&RcvHigh, &PayloadData[tk_idx][7], FOUR);  // Copy last 4 bytes
+                WhsCheck = idMatch(RcvLow, RcvHigh, WhisperList[RcvIndex].lowId, WhisperList[RcvIndex].highId);
+
+                if (WhsCheck) {
+
+                  to_web[0] = WSP;
+                  to_web[1] = RcvIndex;
+                  memcpy(rcv_IV, &PayloadData[tk_idx][11], HKEY);
+                  aes_decipher(&PayloadData[tk_idx][27], PktLen[tk_idx] - 27, &to_web[2], WhisperList[RcvIndex].sharedKey, rcv_IV, &decipher_len);
+                  to_web_len = decipher_len + 2;
+                  if (TurnOnWifi) {
+
+                    webSocket.broadcastBIN(to_web, to_web_len);
+                  }
+
+                  if (oledMsgShow == 1) {  //show in oled
+
+                    // Serial.printf("whisper show in oled  to_web[3]. %d \n ", to_web[2]);
+                    memset(MsgLoop[wspIdx], 0, PKT);
+                    if (to_web[2] == TXT_MSG || to_web[2] == NTF_MSG) {
+                      memcpy(MsgLoop[wspIdx + FOUR], &to_web[2], to_web_len - 2);
+                      jsonStrtrLen = WhisperList[RcvIndex].nameLen;
+                      memcpy(MsgLoop[wspIdx + FOUR], WhisperList[RcvIndex].name, jsonStrtrLen);
+                      MsgLoop[wspIdx + FOUR][jsonStrtrLen] = ':';
+                      memcpy(&MsgLoop[wspIdx + FOUR][jsonStrtrLen + 1], &to_web[2], to_web_len - 2);
+                      wspIdx = (wspIdx + 1) & 3;
+                    }
+                  }
+                  //if (to_web[3] == GPS_MSG){}
+                }
+              }
             }
           }
           break;
         case BIT_MET:  // PayloadData:code,buddyId_8,IV_16,cipheredData{type,len,metadata_v}
           {
-            //Serial.println("rcvMeeting  FT.");
-            memcpy(&RcvLow, &PayloadData[tk_idx][1], FOUR);   // Copy first 4 bytes
-            memcpy(&RcvHigh, &PayloadData[tk_idx][5], FOUR);  // Copy last 4 bytes
-            MetCheck = idMatch(RcvLow, RcvHigh, MeetingList[LastMeetingB].lowId, MeetingList[LastMeetingB].highId);
-            RcvMeetingIndex = LastMeetingB;
-            if (!MetCheck) {
-              MetCheck = idMatch(RcvLow, RcvHigh, MeetingList[LastMeetingA].lowId, MeetingList[LastMeetingA].highId);
-              RcvMeetingIndex = LastMeetingA;
+            if (TrafficDensity < 10) {
+              {
+                //Serial.println("rcvMeeting  FT.");
+                memcpy(&RcvLow, &PayloadData[tk_idx][1], FOUR);   // Copy first 4 bytes
+                memcpy(&RcvHigh, &PayloadData[tk_idx][5], FOUR);  // Copy last 4 bytes
+                MetCheck = idMatch(RcvLow, RcvHigh, MeetingList[LastMeetingB].lowId, MeetingList[LastMeetingB].highId);
+                RcvMeetingIndex = LastMeetingB;
+                if (!MetCheck) {
+                  MetCheck = idMatch(RcvLow, RcvHigh, MeetingList[LastMeetingA].lowId, MeetingList[LastMeetingA].highId);
+                  RcvMeetingIndex = LastMeetingA;
 
-              if (!MetCheck) {
-                RcvMeetingIndex = 0;
-                while (RcvMeetingIndex < MeetingTopIndex) {
-                  RcvMeetingIndex++;
-                  MetCheck = idMatch(RcvLow, RcvHigh, MeetingList[RcvMeetingIndex].lowId, MeetingList[RcvMeetingIndex].highId);
+                  if (!MetCheck) {
+                    RcvMeetingIndex = 0;
+                    while (RcvMeetingIndex < MeetingTopIndex) {
+                      RcvMeetingIndex++;
+                      MetCheck = idMatch(RcvLow, RcvHigh, MeetingList[RcvMeetingIndex].lowId, MeetingList[RcvMeetingIndex].highId);
 
-                  if (MetCheck)
-                    break;
-                }
-              }
-            }
-            if (MetCheck) {
-              memcpy(rcv_IV, &PayloadData[tk_idx][9], HKEY);
-              aes_decipher(&PayloadData[tk_idx][25], PktLen[tk_idx] - 25, &to_web[2], MeetingList[RcvMeetingIndex].sharedKey, rcv_IV, &decipher_len);
-              to_web_len = decipher_len + 2;
-              LastMeetingB = RcvMeetingIndex;
-              if (TurnOnWifi) {
-
-                to_web[0] = MET;
-                to_web[1] = RcvMeetingIndex;
-                if (to_web[2] == GPS_MSG) {
-
-                  if (groupGpsIdx < OCT) {
-                    memcpy(&GoupGpsList[groupGpsIdx], &to_web[3], sizeof(gpsStruct));
-                    groupGpsIdx++;
-                  } else {
-                    for (int i = 1; i < OCT; i++) {
-                      GoupGpsList[i - 1] = GoupGpsList[i];
+                      if (MetCheck)
+                        break;
                     }
-                    memcpy(&GoupGpsList[OCT - 1], &to_web[3], sizeof(gpsStruct));
+                  }
+                }
+                if (MetCheck) {
+                  memcpy(rcv_IV, &PayloadData[tk_idx][9], HKEY);
+                  aes_decipher(&PayloadData[tk_idx][25], PktLen[tk_idx] - 25, &to_web[2], MeetingList[RcvMeetingIndex].sharedKey, rcv_IV, &decipher_len);
+                  to_web_len = decipher_len + 2;
+                  LastMeetingB = RcvMeetingIndex;
+                  if (TurnOnWifi) {
+
+                    to_web[0] = MET;
+                    to_web[1] = RcvMeetingIndex;
+                    if (to_web[2] == GPS_MSG) {
+
+                      if (groupGpsIdx < OCT) {
+                        memcpy(&GoupGpsList[groupGpsIdx], &to_web[3], sizeof(gpsStruct));
+                        groupGpsIdx++;
+                      } else {
+                        for (int i = 1; i < OCT; i++) {
+                          GoupGpsList[i - 1] = GoupGpsList[i];
+                        }
+                        memcpy(&GoupGpsList[OCT - 1], &to_web[3], sizeof(gpsStruct));
+                      }
+
+                    } else {
+                      webSocket.broadcastBIN(to_web, to_web_len);
+                    }
+                  }
+                  if (oledMsgShow == 1) {  //show in oled
+                    if (to_web[2] == TXT_MSG || to_web[2] == NTF_MSG) {
+                      memset(MsgLoop[metIdx + OCT], 0, PKT);
+                      jsonStrtrLen = MeetingList[RcvMeetingIndex].nameLen;
+                      memcpy(MsgLoop[metIdx + OCT], MeetingList[RcvMeetingIndex].name, jsonStrtrLen);
+                      MsgLoop[metIdx + OCT][jsonStrtrLen] = ':';
+                      memcpy(&MsgLoop[metIdx + OCT][jsonStrtrLen + 1], &to_web[2], to_web_len - 2);
+                      metIdx = (metIdx + 1) & 3;
+                    }
                   }
 
-                } else {
-                  webSocket.broadcastBIN(to_web, to_web_len);
-                }
-              }
-              if (oledMsgShow == 1) {  //show in oled
-                if (to_web[2] == TXT_MSG || to_web[2] == NTF_MSG) {
-                  memset(MsgLoop[metIdx + OCT], 0, PKT);
-                  jsonStrtrLen = MeetingList[RcvMeetingIndex].nameLen;
-                  memcpy(MsgLoop[metIdx + OCT], MeetingList[RcvMeetingIndex].name, jsonStrtrLen);
-                  MsgLoop[metIdx + OCT][jsonStrtrLen] = ':';
-                  memcpy(&MsgLoop[metIdx + OCT][jsonStrtrLen + 1], &to_web[2], to_web_len - 2);
-                  metIdx = (metIdx + 1) & 3;
-                }
-              }
 
-
-              if (ForwardGroup > 0) {
-                if (ForwardRSSI > PktRssi[tk_idx] && MeetingList[RcvMeetingIndex].msgId == ForwardGroup) {
-                  while (digitalRead(BusyPin) == HIGH || rfMode == false) {
-                    taskYIELD();
-                    vTaskDelay(pdMS_TO_TICKS(100));
+                  if (ForwardGroup > 0) {
+                    if (ForwardRSSI > PktRssi[tk_idx] && MeetingList[RcvMeetingIndex].msgId == ForwardGroup) {
+                      while (digitalRead(BusyPin) == HIGH || rfMode == false) {
+                        taskYIELD();
+                        vTaskDelay(pdMS_TO_TICKS(100));
+                      }
+                      TransmitState = radio.startTransmit(PayloadData[tk_idx], PktLen[tk_idx]);
+                    }
                   }
-                  TransmitState = radio.startTransmit(PayloadData[tk_idx], PktLen[tk_idx]);
                 }
               }
             }
