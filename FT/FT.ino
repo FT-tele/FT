@@ -21,6 +21,7 @@ void setup() {
   Serial.begin(115200);
 
   initInfrast();
+  for (int i = 0; i < 6; i++) Serial.printf("%d:%02X ", i, FavoriteMAC[0][i]);
 
 
   Serial.print("\n   setup   boot \n");

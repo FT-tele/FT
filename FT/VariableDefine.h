@@ -16,7 +16,7 @@
 #define RstPin 8
 #define BusyPin 9
 #define DIO1Pin 38
-#define DIO2Pin 46 
+#define DIO2Pin 46
 
 //-----------------------------I2C
 #define SDA_PIN 40
@@ -156,9 +156,12 @@ MAC_6; string
 
 //-----------------------------peripherals
 extern uint8_t EnableOLED;    // if  peripherals attached
-extern uint8_t AmplitudeIR;   // if  peripherals attached
-extern uint8_t LanguageFont;  // if  peripherals attached ,msg langunge
-extern bool ButtonIR;         //speak PTT
+extern uint8_t AmplitudeIR;   // if  peripherals attached 
+
+extern uint8_t menuButton;  //loop menu ,pageButton=0;
+extern uint8_t pageButton;  //loop page ,long press sos
+
+extern bool ButtonIR;  //speak PTT
 extern uint8_t EnterSOS;
 extern uint8_t takingHBR;
 extern uint8_t LocationSaveFreq;  //
@@ -283,7 +286,7 @@ extern volatile uint8_t LastMeetingB;  // last meeting id for active
 extern uint8_t GreetingCode[OCT];
 extern bool SandboxFlag;
 
- 
+
 
 //-----------------------------Contact
 
@@ -325,7 +328,8 @@ typedef struct SystemConfig {
   uint8_t MyName[KEY];
   uint8_t Mode;  //FT / Repeater / Sensor / IOT manager /Camera
   uint8_t ForwardGroup;
-
+  uint8_t allowFound;
+  uint8_t oledLanguage;
   //-----------------------------radio setting
   float Frequency;
   float Bandwidth;

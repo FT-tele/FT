@@ -23,7 +23,9 @@ const char PGM_SpeechListJson[] PROGMEM = R"rawliteral(
     {"name": "💲💳", "sessionId": 12, "msgId": 12},
     {"name": "👠💎", "sessionId": 13, "msgId": 13},
     {"name": "🛡️🔒", "sessionId": 14, "msgId": 14},
-    {"name": "🐱🐠", "sessionId": 15, "msgId": 15}
+    {"name": "🐱🐠", "sessionId": 15, "msgId": 15},
+    {"name": "Lost&Found", "sessionId": 15, "msgId": 16}
+    
   ]
 }
 )rawliteral";

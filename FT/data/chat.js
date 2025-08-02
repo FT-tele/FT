@@ -23,6 +23,7 @@ let lastAlert = "";
 let timeoutId;
 let foundMatch = false;
 let sosSend = false;
+let cmdSerialNumber = 0;
 //const sosArray = new Uint8Array([2, 0, 0, 0, 0, 0, 0, 0, 0]);//SOS header
 
 let CenterFreq = 915;
@@ -33,6 +34,7 @@ let MeetingList = [];
 let SpeechList = [];
 let ConfigList = [];
 
+let gpsJsonStr = "";
 //-------------------------------file send
 const reader = new FileReader();
 
@@ -370,7 +372,6 @@ async function getRecordsByMsgId(storeName, msgId) {
             indexRequest.onsuccess = () => {
                 let messages = indexRequest.result;
                 if (!messages || messages.length === 0) {
-                    console.warn(`No messages found for msgId: ${msgId}`);
                     ChatBox.textContent = "No messages found for this user.";
                     return resolve([]);
                 }
@@ -786,8 +787,7 @@ function closeForm(formId) {
 
 function deliverSOS() {
 
-    let gpsJson = '{"1":32.1220745,"2":119.0263067,"3":121.7,"4":0,"5":0}';
-    let gpsJsonStr = JSON.stringify(gpsJson);
+     
 
     alertMsg = document.getElementById("alertMsg").value + '*' + gpsJsonStr;
     let alertMsgArray = MsgTextEncoder.encode(alertMsg);
@@ -1907,13 +1907,28 @@ document.getElementById("pic-btn").addEventListener("click", function () {
     document.getElementById("imageInput").click();
 });
 
+document.getElementById("Search-btn").addEventListener("click", function () {
+    document.getElementById("find-form").style.display = "block";
+    document.querySelector('.sos-input').style.display = 'block';
+    document.querySelector('.IoT-inputs').style.display = 'none';
+    //initColorPicker('colorCanvas', 'inputR', 'inputG', 'inputB', 'colorPreview');
+    //console.log("open find form");
+});
+
+document.getElementById("IoT-btn").addEventListener("click", function () {
+    document.getElementById("find-form").style.display = "block";
+    document.querySelector('.IoT-inputs').style.display = 'block';
+    document.querySelector('.sos-input').style.display = 'none';
+    //console.log("open find form");
+});
+
+
 document.getElementById("SOS-btn").addEventListener("click", function () {
     document.getElementById("sos-form").style.display = "block";
 });
 
-
 document.getElementById("GPS-btn").addEventListener("click", function () {
- 
+
     let oldestKey = null;
     let oldestData = null;
 
@@ -1926,7 +1941,7 @@ document.getElementById("GPS-btn").addEventListener("click", function () {
         }
     }
 
- 
+
 
 
 
@@ -1968,36 +1983,51 @@ function downloadSensorGroupKey() {
 // Validation for inputs inside MAC_input div
 
 
+const inputR = document.getElementById('inputR');
+const inputG = document.getElementById('inputG');
+const inputB = document.getElementById('inputB');
+const previewBox = document.getElementById('colorPreview');
+
+function updateColor() {
+    const r = parseInt(inputR.value) || 0;
+    const g = parseInt(inputG.value) || 0;
+    const b = parseInt(inputB.value) || 0;
+    previewBox.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+}
+
+// Add event listeners to inputs
+[inputR, inputG, inputB].forEach(input => {
+    input.addEventListener('input', updateColor);
+});
+
+
+
+
+
+// Initialize the color picker
 
 
 function Find() {
     const ids = ['MAC_input1', 'MAC_input2', 'MAC_input3', 'MAC_input4', 'MAC_input5', 'MAC_input6'];
     const macBytes = [];
+    const macHexStrings = [];
     let hasError = false;
 
     ids.forEach((id, index) => {
         const input = document.getElementById(id);
         const val = input.value.trim();
-        let byteVal;
 
-        if (/^[0-9]{1,3}$/.test(val)) {
-            byteVal = parseInt(val);
-            if (byteVal < 0 || byteVal > 255) {
-                hasError = true;
-                console.log(`❌ Input ${index + 1} out of decimal range: ${val}`);
-                input.style.border = '2px solid red';
-            } else {
-                macBytes.push(byteVal);
-                input.style.border = '';
-            }
-        } else if (/^[0-9A-Fa-f]{2}$/.test(val)) {
-            byteVal = parseInt(val, 16);
-            macBytes.push(byteVal);
-            input.style.border = '';
-        } else {
+        // Always treat input as hex
+        const byteVal = parseInt(val, 16);
+
+        if (isNaN(byteVal) || byteVal < 0 || byteVal > 255) {
             hasError = true;
-            console.log(`❌ Input ${index + 1} has invalid format: ${val}`);
+            console.log(`❌ Input ${index + 1} invalid or out of range: "${val}"`);
             input.style.border = '2px solid red';
+        } else {
+            macBytes.push(byteVal);
+            macHexStrings.push(byteVal.toString(16).padStart(2, '0').toUpperCase());
+            input.style.border = '';
         }
     });
 
@@ -2006,61 +2036,52 @@ function Find() {
         return;
     }
 
-    const inputR = document.getElementById("inputR");
-    const inputG = document.getElementById("inputG");
-    const inputB = document.getElementById("inputB");
+    // Debug: show final MAC address in HEX
+    console.log("🔷 MAC Address (Hex):", macHexStrings.join(':'));
 
+    const getColorComponent = (id) => {
+        const val = parseInt(document.getElementById(id).value);
+        return Math.max(0, Math.min(255, isNaN(val) ? 0 : val));
+    };
 
-    const r = Math.min(255, Math.max(0, parseInt(inputR.value) || 0));
-    const g = Math.min(255, Math.max(0, parseInt(inputG.value) || 0));
-    const b = Math.min(255, Math.max(0, parseInt(inputB.value) || 0));
-    //console.log(`RGB values: R=${r}, G=${g}, B=${b}`);
-    // You can add code here to update the color preview, send data, etc.
+    const r = getColorComponent("inputR");
+    const g = getColorComponent("inputG");
+    const b = getColorComponent("inputB");
 
+    const checkboxByte = document.getElementById('enableMAC').checked ? 1 : 0;
 
-
-    // Add 7th byte based on checkbox
-    const checkbox = document.getElementById('enableMAC');
-    const checkboxByte = checkbox.checked ? 1 : 0;
-    macBytes.push(checkboxByte);
-    macBytes.push(r, g, b);
-
-    // const MacArray = new Uint8Array(macBytes);
+    macBytes.push(checkboxByte, r, g, b);
     const header = [2, 0, 2];
     const finalPayload = new Uint8Array([...header, ...macBytes]);
+
     ws.send(finalPayload);
 
-
+    sosSend = true;
+    console.log("✅ Payload sent:", finalPayload);
 }
+
+
 
 function ackSOS() {
     const ids = ['MAC_input1', 'MAC_input2', 'MAC_input3', 'MAC_input4', 'MAC_input5', 'MAC_input6'];
     const macBytes = [];
     let hasError = false;
-
+    const macHexStrings = [];
     ids.forEach((id, index) => {
         const input = document.getElementById(id);
         const val = input.value.trim();
-        let byteVal;
 
-        if (/^[0-9]{1,3}$/.test(val)) {
-            byteVal = parseInt(val);
-            if (byteVal < 0 || byteVal > 255) {
-                hasError = true;
-                console.log(`❌ Input ${index + 1} out of decimal range: ${val}`);
-                input.style.border = '2px solid red';
-            } else {
-                macBytes.push(byteVal);
-                input.style.border = '';
-            }
-        } else if (/^[0-9A-Fa-f]{2}$/.test(val)) {
-            byteVal = parseInt(val, 16);
-            macBytes.push(byteVal);
-            input.style.border = '';
-        } else {
+        // Always treat input as hex
+        const byteVal = parseInt(val, 16);
+
+        if (isNaN(byteVal) || byteVal < 0 || byteVal > 255) {
             hasError = true;
-            console.log(`❌ Input ${index + 1} has invalid format: ${val}`);
+            console.log(`❌ Input ${index + 1} invalid or out of range: "${val}"`);
             input.style.border = '2px solid red';
+        } else {
+            macBytes.push(byteVal);
+            macHexStrings.push(byteVal.toString(16).padStart(2, '0').toUpperCase());
+            input.style.border = '';
         }
     });
 
@@ -2069,17 +2090,75 @@ function ackSOS() {
         return;
     }
 
-    // Add 7th byte based on checkbox
+    // Checkbox flag
     const checkbox = document.getElementById('enableMAC');
     const checkboxByte = checkbox.checked ? 1 : 0;
     macBytes.push(checkboxByte);
 
-    // const MacArray = new Uint8Array(macBytes);
+    // Payload build
     const header = [2, 0, 4];
     const finalPayload = new Uint8Array([...header, ...macBytes]);
+
     ws.send(finalPayload);
 
+    sosSend = true;
+    console.log("✅ ackSOS payload sent:", finalPayload);
+}
 
+
+function sendCmd() {
+    const ids = ['MAC_input1', 'MAC_input2', 'MAC_input3', 'MAC_input4', 'MAC_input5', 'MAC_input6'];
+    const macBytes = [];
+    const macHexStrings = [];
+    let hasError = false;
+
+    ids.forEach((id, index) => {
+        const input = document.getElementById(id);
+        const val = input.value.trim();
+
+        // Always treat input as hex
+        const byteVal = parseInt(val, 16);
+
+        if (isNaN(byteVal) || byteVal < 0 || byteVal > 255) {
+            hasError = true;
+            console.log(`❌ Input ${index + 1} invalid or out of range: "${val}"`);
+            input.style.border = '2px solid red';
+        } else {
+            macBytes.push(byteVal);
+            macHexStrings.push(byteVal.toString(16).padStart(2, '0').toUpperCase());
+            input.style.border = '';
+        }
+    });
+
+    if (hasError) {
+        console.log('🚫 MAC data not sent due to input errors.');
+        return;
+    }
+
+    // Debug: show final MAC address in HEX
+    console.log("🔷 MAC Address (Hex):", macHexStrings.join(':'));
+
+    const getColorComponent = (id) => {
+        const val = parseInt(document.getElementById(id).value);
+        return Math.max(0, Math.min(255, isNaN(val) ? 0 : val));
+    };
+    cmdSerialNumber = Math.floor(Math.random() * 256);
+
+    const ch01 = getColorComponent("switch-01");
+    const ch02 = getColorComponent("switch-02");
+    const ch03 = getColorComponent("switch-03");
+    const ch04 = getColorComponent("switch-04");
+    const ch05 = getColorComponent("switch-05");
+
+
+    macBytes.push(cmdSerialNumber, ch01, ch02, ch03, ch04, ch05);
+    const header = [2, 0, 5];
+    const finalPayload = new Uint8Array([...header, ...macBytes]);
+
+    ws.send(finalPayload);
+
+    sosSend = true;
+    console.log("✅ cmd Payload sent:", finalPayload);
 }
 
 
@@ -2228,42 +2307,19 @@ convertBtn.addEventListener('click', () => {
 
 
 
-function fetchMonitor(data) {
-    processLocation(data); // Update speed and distance
-    initMap(data); // Update the map using the provided data
+function fetchMonitor(gpsJson) {
+
+    document.getElementById("speed").innerText = `Speed: ${gpsJson.Sp} km/h`;
+    document.getElementById("distance").innerText = `Distance: ${gpsJson.Td} meters`;
+    document.getElementById("latitude").innerText = `Latitude: ${gpsJson.La}`;
+    document.getElementById("longitude").innerText = `Longitude: ${gpsJson.Ln}`;
+    document.getElementById("altitude").innerText = `Altitude: ${gpsJson.Al}`;
+    document.getElementById("relay").innerText = `RelayNum: ${gpsJson.Ry}`;
+    document.getElementById("status").innerText = `Status: ${gpsJson.St}`;
 }
 
 
 
-
-let map = null; // Store map instance globally
-
-
-
-function initMap(location) {
-    if (!location || !location.Latitude || !location.Longitude) {
-        console.error("Error: Invalid location data for map initialization");
-        return;
-    }
-
-    // If the map already exists, remove it before creating a new instance
-    if (map) {
-        map.remove();
-    }
-
-    map = L.map('map', { zoomControl: false, scrollWheelZoom: false, dragging: false })
-        .setView([location.Latitude, location.Longitude], 14);
-
-    L.marker([location.Latitude, location.Longitude], {
-        icon: L.icon({
-            iconUrl: '/images/marker-icon.png',
-            iconSize: [15, 20],
-            iconAnchor: [8, 20]
-        })
-    }).addTo(map).bindPopup("Current Position");
-
-    document.getElementById('map').style.backgroundColor = '#ddd';  // Set default background if no image uploaded
-}
 
 
 // Handle PNG background upload and display
@@ -2291,44 +2347,10 @@ document.getElementById('tileBackground').addEventListener('change', function (e
     }
 });
 
-let totalDistance = 0;
-let previousLocation = null;
 
-function updateBanner(speed, distance) {
-    document.getElementById('speed').textContent = speed.toFixed(2);
-    document.getElementById('distance').textContent = distance.toFixed(2);
-}
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371000; // Radius of Earth in meters
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in meters
-}
 
-function processLocation(location) {
-    if (!location || !location.Latitude || !location.Longitude) {
-        console.error("Error: Invalid location data for processing");
-        return;
-    }
 
-    const speed = location.Speed || 0;
-
-    if (previousLocation) {
-        const distance = calculateDistance(
-            previousLocation.Latitude, previousLocation.Longitude,
-            location.Latitude, location.Longitude
-        );
-        totalDistance += distance;
-    }
-
-    previousLocation = location;
-    updateBanner(speed, totalDistance);
-}
 
 
 
@@ -2341,7 +2363,6 @@ function processLocation(location) {
 //---------------------------------------------websocket 
 window.onload = function () {
     // clear speech DB
-
     localStorage.clear();
     loadingMsgDB();
     if (sessionStorage.getItem("reloaded")) {
@@ -2356,6 +2377,8 @@ window.onload = function () {
 
 
     busyNotifyUpdate();
+
+
     // Set a flag in sessionStorage
     sessionStorage.setItem("reloaded", "true");
     ws.binaryType = "arraybuffer";
@@ -2482,43 +2505,40 @@ window.onload = function () {
                     break;
                 case 2://alert
                     {
+                        //MAC address parse
+
+                        let sosOffset = 0;
+
+                        if (byteArray[1] == 0)
+                            sosOffset = 0;
+                        else
+                            sosOffset = 12;
+
+                        const hexString = Array.from(byteArray.slice(3 + sosOffset, 9 + sosOffset))
+                            .map(byte => byte.toString(16).padStart(2, '0')) // Convert to 2-digit hex
+                            .join(':'); // Join with colon
+
+                        console.log(hexString); // e.g., "1a:2b:3c:4d:5e:6f"
 
                         if (byteArray[1] < 3) {
 
-                            if (byteArray[2] == 4) {
+                            if (byteArray[2] == 1) {//watchSOS
 
-                                //byteArray.length
-                                let gHeader = new Uint8Array();
-                                let gMacAddress = new Uint8Array();
-                                let gJsonData = {};
-                                gHeader = byteArray.slice(0, 3);
-                                gMacAddress = byteArray.slice(3, 9);
+                                //byteArray.length 
                                 const jsonBytes = byteArray.slice(11);
-                                //jsonBytes[jsonBytes.length] = '}';
-                                console.log(jsonBytes.length);
+                                const trimmedArray = jsonBytes.slice(0, jsonBytes.length - 1);
                                 const decoder = new TextDecoder("utf-8");
-                                let jsonStr = decoder.decode(jsonBytes);
-                                //jsonStr=jsonStr+"}";
-                                console.log(jsonStr);
-                                //jsonStr = jsonStr.trim();
-                                try {
-                                    gJsonData = JSON.parse(jsonStr);
-                                    console.log(gJsonData);
-                                } catch (error) {
-                                    console.error("❌ JSON parsing failed:", error);
-                                    console.log("🚧 Decoded JSON string:", jsonStr);
+                                let jsonStr = decoder.decode(trimmedArray);//.replace(/[^\p{L}\p{N}\s]/gu, ""); 
+                                jsonStr = "watchSOS MAC : " + hexString + ".  message : " + jsonStr;
+                                searchAlertHistory(jsonStr);
+                                if (!foundMatch) {
+                                    showNotification(10000, jsonStr);
+                                    storeMsg("Speech", 0, 1, jsonStr, true);//#define MSG 2   // text message
                                 }
-
 
                             }
 
-                            if (byteArray[2] == 1) {//phoneS
-                                let sosOffset = 0;
-
-                                if (byteArray[1] == 0)
-                                    sosOffset = 0;
-                                else
-                                    sosOffset = 12;
+                            if (byteArray[2] == 0) {//phoneSOS
 
                                 let list1Value = byteArray[9 + sosOffset];
                                 let list2Value = byteArray[10 + sosOffset];
@@ -2533,14 +2553,13 @@ window.onload = function () {
                                 let Note = MsgTextDecoder.decode(byteArray.slice(13 + sosOffset));
                                 let alertRcvMsgInput = `SOS ${Happened}  ${Type}  happened .  ${Fatality} FATAL  and ${Struck} STUCK ; Note:${Note};`;
                                 let alertRcvMsg = alertRcvMsgInput.replace(/[^\p{L}\p{N}\s]/gu, "");
+                                alertRcvMsg = "phoneSOS MAC : " + hexString + ".  message : " + alertRcvMsg;
                                 searchAlertHistory(alertRcvMsg);
                                 if (!foundMatch) {
                                     showNotification(10000, alertRcvMsg);
+                                    storeMsg("Speech", 0, 1, alertRcvMsg, true);//#define MSG 2   // text message
 
-                                } else {
-                                    lastAlert = alertRcvMsg;
                                 }
-                                storeMsg("Speech", 0, 1, alertRcvMsg, true);//#define MSG 2   // text message
 
 
                             }
@@ -2668,8 +2687,11 @@ window.onload = function () {
                 case 5:
                     //update gps
                     {
+                        if (rcvjsonData["W"] == 0)
+                            gpsJsonStr = JSON.stringify(rcvjsonData);
 
                         const timestamp = new Date().toISOString();
+
                         sessionStorage.setItem(timestamp, JSON.stringify(rcvjsonData));
                         fetchMonitor(rcvjsonData);
 

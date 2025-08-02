@@ -11,7 +11,7 @@
 #include "Fourier.h"
 #include "Sensor.h"
 #include "VariableDefine.h"
- 
+
 
 
 
@@ -38,8 +38,7 @@ char timeBuffer[9];
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
-uint8_t menuButton = 0;  //loop menu ,pageButton=0;
-uint8_t pageButton = 0;  //loop page ,long press sos
+
 uint8_t msgIndex = 0;
 int xPos = KEY;
 //-----------------------------MAX3010x
@@ -182,6 +181,8 @@ void max3010xTask(void *pvParameters) {
       WsQueue[0].payloadData[2] = 1;
       WsQueue[0].payloadData[10] = '*';
       GPSjson["W"] = 1;  //sos gps
+
+      //for (int i = 0; i < 6; i++) Serial.printf("%d:%02X ", i, FavoriteMAC[0][i]);
       memcpy(&WsQueue[0].payloadData[3], FavoriteMAC[0], 6);
       serializeJson(GPSjson, sosStr);
       WsQueue[0].pktLen = sosStr.length() + 1;
@@ -273,8 +274,8 @@ void gpsTask(void *pvParameters) {
 
     if (hasLastLocation) {
       double segment = TinyGPSPlus::distanceBetween(
-        lastLat, lastLon,
-        Latitude, Longitude);
+
+        Latitude, Longitude, lastLat, lastLon);
 
       if (segment >= 5.0) {
         TotalDistanceMeters += segment;
@@ -323,6 +324,7 @@ void gpsTask(void *pvParameters) {
         GPSjson["Sp"] = Speed;
         GPSjson["Ry"] = RelayNum;
         GPSjson["St"] = Satellites;
+        GPSjson["Td"] = TotalDistanceMeters;
 
         if (beatAvg > 0) {
           GPSjson["HB"] = beatAvg;
@@ -375,6 +377,7 @@ void gpsTask(void *pvParameters) {
 //
 void oledTask(void *pvParameters) {
 
+  uint8_t LanguageFont = FTconfig.oledLanguage;  // if  peripherals attached ,msg langunge
 
 
   pinMode(MENU_BTN, INPUT_PULLUP);
@@ -448,8 +451,8 @@ void oledTask(void *pvParameters) {
   int y = 0;  // Map to screen height
 
 
-                      int nextX = 0;
-                      int nextY =0;
+  int nextX = 0;
+  int nextY = 0;
 
   while (true) {
 
@@ -548,14 +551,14 @@ void oledTask(void *pvParameters) {
 
                   // ⬇️ Start drawing path using PathGpsList
                   for (int i = 0; i < pathIndex; i++) {
-                      x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
-                      y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
+                    x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
+                    y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
 
                     u8g2.drawCircle(x, y, 1, U8G2_DRAW_ALL);  // Draw small dot
 
                     if (i < (pathIndex - 1)) {
-                        nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
-                        nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
+                      nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
+                      nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
                       u8g2.drawLine(x, y, nextX, nextY);  // Connect to next dot
                     }
                   }
@@ -582,7 +585,7 @@ void oledTask(void *pvParameters) {
           switch (LanguageFont) {
             case LATIN:
               {  //latin
-                u8g2.setFont(u8g2_font_lucasfont_alternate_tr);
+                u8g2.setFont(u8g2_font_wqy16_t_gb2312b);
               }
               break;
             case CHINESE:
@@ -667,14 +670,14 @@ void oledTask(void *pvParameters) {
 
                   // ⬇️ Start drawing path using PathGpsList
                   for (int i = 0; i < 15; i++) {
-                      x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
-                      y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
+                    x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
+                    y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
 
                     //u8g2.drawCircle(x, y, 1, U8G2_DRAW_ALL);  // Draw small dot
                     u8g2.drawBox(x - 1, y - 1, 3, 3);  // Bold dot (3×3 square)
                     if (i < (15 - 1)) {
-                        nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
-                        nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
+                      nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
+                      nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
                       u8g2.drawLine(x, y, nextX, nextY);  // Connect to next dot
                     }
                   }
@@ -696,14 +699,14 @@ void oledTask(void *pvParameters) {
 
                   // ⬇️ Start drawing path using PathGpsList
                   for (int i = 0; i < 31; i++) {
-                      x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
-                      y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
+                    x = map(PathGpsList[i].latitude, minLat, maxLat, 0, 127);  // Map latitude to screen width
+                    y = map(PathGpsList[i].longitude, minLon, maxLon, 0, 63);  // Map longitude to screen height
 
                     u8g2.drawCircle(x, y, 1, U8G2_DRAW_ALL);  // Draw small dot
 
                     if (i < 30) {
-                        nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
-                        nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
+                      nextX = map(PathGpsList[i + 1].latitude, minLat, maxLat, 0, 127);
+                      nextY = map(PathGpsList[i + 1].longitude, minLon, maxLon, 0, 63);
                       u8g2.drawLine(x, y, nextX, nextY);  // Connect to next dot
                     }
                   }
@@ -731,8 +734,8 @@ void oledTask(void *pvParameters) {
                 }
 
                 for (int i = 0; i < 31; i++) {
-                    x = map(i, 0, 30, 0, 127);                                // X: evenly spaced across screen
-                    y = map(PathGpsList[i].altitude, minAlt, maxAlt, 63, 0);  // Y: scaled altitude (inverted)
+                  x = map(i, 0, 30, 0, 127);                                // X: evenly spaced across screen
+                  y = map(PathGpsList[i].altitude, minAlt, maxAlt, 63, 0);  // Y: scaled altitude (inverted)
 
                   u8g2.drawBox(x - 1, y - 1, 3, 3);  // Bold dot (3×3 square)
                   if (PathGpsList[i].altitude == minAlt) {
@@ -742,8 +745,8 @@ void oledTask(void *pvParameters) {
                     u8g2.print(maxAlt);
                   }
                   if (i < 30) {
-                      nextX = map(i + 1, 0, 30, 0, 127);
-                      nextY = map(PathGpsList[i + 1].altitude, minAlt, maxAlt, 63, 0);
+                    nextX = map(i + 1, 0, 30, 0, 127);
+                    nextY = map(PathGpsList[i + 1].altitude, minAlt, maxAlt, 63, 0);
                     u8g2.drawLine(x, y, nextX, nextY);
                   }
                 }
@@ -759,8 +762,8 @@ void oledTask(void *pvParameters) {
 
 
                 for (int i = 0; i < 31; i++) {
-                    x = map(i, 0, 30, 0, 127);
-                    y = map(PathGpsList[i].speed, minSpeed, maxSpeed, 63, 0);
+                  x = map(i, 0, 30, 0, 127);
+                  y = map(PathGpsList[i].speed, minSpeed, maxSpeed, 63, 0);
 
                   u8g2.drawBox(x - 1, y - 1, 2, 2);  // Small dot (2×2 square)
                   if (PathGpsList[i].speed == minSpeed) {
@@ -772,8 +775,8 @@ void oledTask(void *pvParameters) {
 
 
                   if (i < 30) {
-                      nextX = map(i + 1, 0, 30, 0, 127);
-                      nextY = map(PathGpsList[i + 1].speed, minSpeed, maxSpeed, 63, 0);
+                    nextX = map(i + 1, 0, 30, 0, 127);
+                    nextY = map(PathGpsList[i + 1].speed, minSpeed, maxSpeed, 63, 0);
                     u8g2.drawLine(x, y, nextX, nextY);
                   }
                 }

@@ -7,7 +7,9 @@
 //-----------------------------peripherals
 uint8_t EnableOLED = 1;    // if  peripherals attached
 uint8_t AmplitudeIR = 60;  // if  peripherals attached
-uint8_t LanguageFont = 1;  // if  peripherals attached ,msg langunge
+uint8_t menuButton = 0;  //loop menu ,pageButton=0;
+uint8_t pageButton = 0;  //loop page ,long press sos
+
 bool ButtonIR = false;     //speak PTT
 uint8_t EnterSOS = 0;      //waiting for ack
 uint8_t takingHBR = 0;
