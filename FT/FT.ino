@@ -1,5 +1,7 @@
 
 #include <esp_heap_caps.h>
+
+#include "esp_mac.h"
 #include "WiFi.h"
 
 #include "AES.h"
@@ -20,6 +22,9 @@ void setup() {
 
   Serial.begin(115200);
 
+
+  esp_efuse_mac_get_default(FavoriteMAC[0]);
+  esp_read_mac(FavoriteMAC[0], ESP_MAC_WIFI_SOFTAP);
   initInfrast();
   for (int i = 0; i < 6; i++) Serial.printf("%d:%02X ", i, FavoriteMAC[0][i]);
 
@@ -37,7 +42,7 @@ void setup() {
 
 
 
-   xTaskCreatePinnedToCore(electricTask, "electricTask", 4096, NULL, 8, &electricTaskHandle, CORE1);
+  xTaskCreatePinnedToCore(electricTask, "electricTask", 4096, NULL, 8, &electricTaskHandle, CORE1);
   //vTaskDelay(5000 / portTICK_PERIOD_MS);
 
 
@@ -53,13 +58,13 @@ void setup() {
     Wire.begin(SDA_PIN, SCK_PIN);
     Wire.setClock(400000);
 
-     xTaskCreatePinnedToCore(oledTask, "oledTask", 4096, NULL, 4, &oledTaskHandle, CORE0);
+    xTaskCreatePinnedToCore(oledTask, "oledTask", 4096, NULL, 4, &oledTaskHandle, CORE1);
     //vTaskDelay(6000 / portTICK_PERIOD_MS);
 
-    xTaskCreatePinnedToCore(max3010xTask, "max3010xTask", 4096, NULL, 5, &max3010xTaskHandle, CORE1);
+    xTaskCreatePinnedToCore(max3010xTask, "max3010xTask", 4096, NULL, 5, &max3010xTaskHandle, CORE0);
     //vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    xTaskCreatePinnedToCore(gpsTask, "gpsTask", 4096, NULL, 5, &gpsTaskHandle, CORE1);
+    xTaskCreatePinnedToCore(gpsTask, "gpsTask", 4096, NULL, 5, &gpsTaskHandle, CORE0);
     //vTaskDelay(2000 / portTICK_PERIOD_MS);
   }
 
@@ -85,12 +90,12 @@ void setup() {
   if (TurnOnWifi) {
 
     WiFi.mode(WIFI_AP);
-    xTaskCreatePinnedToCore(httpdTask, "httpdTask", 4096, NULL, 4, &httpdTaskHandle, CORE0); 
+    xTaskCreatePinnedToCore(httpdTask, "httpdTask", 4096, NULL, 4, &httpdTaskHandle, CORE0);
 
     xTaskCreatePinnedToCore(sessionCipherTask, "sessionCipherTask", 8192, NULL, 9, &sessionCipherTaskHandle, CORE1);
 
 
-    xTaskCreatePinnedToCore(websocketTask, "websocketTask", 4096, NULL, 7, &websocketTaskHandle, CORE0);
+    xTaskCreatePinnedToCore(websocketTask, "websocketTask", 8192, NULL, 7, &websocketTaskHandle, CORE0);
 
 
 

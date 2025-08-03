@@ -258,6 +258,7 @@ void gpsTask(void *pvParameters) {
   double lastLat = 0.0;
   double lastLon = 0.0;
   bool hasLastLocation = false;
+  double segment = 0;
 
   Serial1.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
 
@@ -273,13 +274,14 @@ void gpsTask(void *pvParameters) {
     }
 
     if (hasLastLocation) {
-      double segment = TinyGPSPlus::distanceBetween(
+      segment = TinyGPSPlus::distanceBetween(
 
         Latitude, Longitude, lastLat, lastLon);
 
       if (segment >= 5.0) {
         TotalDistanceMeters += segment;
       }
+      hasLastLocation = false;
     }
 
     if (gps.location.isValid()) {

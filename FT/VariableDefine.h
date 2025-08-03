@@ -9,14 +9,14 @@
 //-------------------------------------------------------hardware
 
 #define CORE0 0
-#define CORE1 0
+#define CORE1 1
 
 //-----------------------------LLCC68
 #define NssPin 10
 #define RstPin 8
 #define BusyPin 9
-#define DIO1Pin 38
-#define DIO2Pin 46
+#define DIO1Pin 46
+#define DIO2Pin 38
 
 //-----------------------------I2C
 #define SDA_PIN 40
@@ -200,9 +200,7 @@ extern volatile int timeZone;      //timeZone offset UTC
 extern volatile uint8_t MissionGroup;
 extern uint8_t ForwardGroup;
 extern float ForwardRSSI;
-
-extern String SSID;
-extern String Password;
+ 
 
 
 extern volatile uint8_t TrafficDensity;
@@ -330,6 +328,7 @@ typedef struct SystemConfig {
   uint8_t ForwardGroup;
   uint8_t allowFound;
   uint8_t oledLanguage;
+  uint8_t WifiMode;
   //-----------------------------radio setting
   float Frequency;
   float Bandwidth;

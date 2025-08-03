@@ -16,7 +16,7 @@ uint8_t takingHBR = 0;
 uint8_t LocationSaveFreq = 1;
 uint8_t RelayNum = 0;
 uint8_t oledMsgShow = 1;
-volatile bool TurnOnWifi = 0;  //0 off / 1 on
+volatile bool TurnOnWifi = 1;  //0 off / 1 on
 uint8_t FavoriteMAC[OCT][6];   //MAC address of AP
 
 uint8_t LedRed = 0;
@@ -46,9 +46,7 @@ volatile uint8_t MissionGroup = 0;
 uint8_t ForwardGroup = 0;
 float ForwardRSSI = 0;
 
-
-String SSID = "AC";
-String Password = "Or^Password";
+ 
 String GPSjsonStr;
 
 uint8_t volatile TrafficDensity = 0;
