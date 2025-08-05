@@ -155,8 +155,8 @@ MAC_6; string
 //-------------------------------------------------------hardware
 
 //-----------------------------peripherals
-extern uint8_t EnableOLED;    // if  peripherals attached
-extern uint8_t AmplitudeIR;   // if  peripherals attached 
+extern uint8_t EnableOLED;   // if  peripherals attached
+extern uint8_t AmplitudeIR;  // if  peripherals attached
 
 extern uint8_t menuButton;  //loop menu ,pageButton=0;
 extern uint8_t pageButton;  //loop page ,long press sos
@@ -192,15 +192,15 @@ extern size_t frame_len[KEY];
 
 //-----------------------------settings
 
-extern volatile uint8_t Role;      //FT / Relay(PktDensity<6&&rssi< x Dbm) / Sensor / Gateway(IOT manager) /Camera /Kids
-extern volatile uint8_t Mode;      //0 FIT / 1 TOP /2  Forward  /3  sensorRelay /4  SOS
-extern volatile uint8_t WifiMode;  //AP / STA
+extern volatile uint8_t Role;  //FT / Relay(PktDensity<6&&rssi< x Dbm) / Sensor / Gateway(IOT manager) /Camera /Kids
+extern volatile uint8_t Mode;  //0 FIT / 1 TOP /2  Forward  /3  sensorRelay /4  SOS
+//extern volatile uint8_t WifiMode;   // 0 disable /1 AP /2 STA
 extern volatile bool PhonePermit;  //allow send opus audio out,250 && center freq only permit SOS mode
 extern volatile int timeZone;      //timeZone offset UTC
 extern volatile uint8_t MissionGroup;
 extern uint8_t ForwardGroup;
 extern float ForwardRSSI;
- 
+
 
 
 extern volatile uint8_t TrafficDensity;
@@ -282,7 +282,7 @@ extern volatile uint8_t LastMeetingB;  // last meeting id for active
 
 
 extern uint8_t GreetingCode[OCT];
-extern bool SandboxFlag;
+extern bool RebootFT;
 
 
 
@@ -309,9 +309,6 @@ extern volatile uint16_t WhisperIndex;
 extern volatile uint16_t MeetingIndex;
 
 
-extern uint8_t WsText[512];
-
-extern volatile uint8_t WsTextLen;
 
 //--------------------------------------------------------------------------------------------------------struct
 //-----------------------------struct define
@@ -328,7 +325,8 @@ typedef struct SystemConfig {
   uint8_t ForwardGroup;
   uint8_t allowFound;
   uint8_t oledLanguage;
-  uint8_t WifiMode;
+  uint8_t WifiMode;  // 0 disable /1
+  uint8_t EnableGPS;
   //-----------------------------radio setting
   float Frequency;
   float Bandwidth;
@@ -385,7 +383,7 @@ typedef struct gpsStruct {
 
 //-----------------------------instance
 
-extern PktStruct WsQueue[KEY];  // ws_BIN received
+extern PktStruct WsQueue[HKEY];  // ws_BIN received
 extern PktStruct SndPkt[KEY];
 
 extern greetingStruct GreetingList[OCT];

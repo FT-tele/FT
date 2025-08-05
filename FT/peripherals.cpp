@@ -820,10 +820,13 @@ void oledTask(void *pvParameters) {
               {
 
                 u8g2.setCursor(0, HKEY);
-                if (TurnOnWifi == 0)
+                if (TurnOnWifi == false) {
+
                   u8g2.print("switch to Dock");
-                else
+                } else {
+
                   u8g2.print("switch to watch");
+                }
 
 
                 u8g2.setCursor(0, 40);
@@ -853,9 +856,15 @@ void oledTask(void *pvParameters) {
                 u8g2.setFont(u8g2_font_t0_22_te);
                 u8g2.setCursor(0, KEY);
                 u8g2.print("rebooting");
-                u8g2.sendBuffer();
-                TurnOnWifi = !TurnOnWifi;
-                FTconfig.Mode = TurnOnWifi;
+                u8g2.sendBuffer(); 
+
+                if (TurnOnWifi == false) {
+
+                  FTconfig.Mode = 1;
+                } else {
+
+                  FTconfig.Mode = 0;
+                }
                 if (saveConfig()) {
 
                   ESP.restart();

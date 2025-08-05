@@ -26,6 +26,7 @@ void setup() {
   esp_efuse_mac_get_default(FavoriteMAC[0]);
   esp_read_mac(FavoriteMAC[0], ESP_MAC_WIFI_SOFTAP);
   initInfrast();
+
   for (int i = 0; i < 6; i++) Serial.printf("%d:%02X ", i, FavoriteMAC[0][i]);
 
 
@@ -35,10 +36,7 @@ void setup() {
   loraQueue = xQueueCreate(KEY, sizeof(uint8_t));
 
   wsEventQueue = xQueueCreate(HKEY, sizeof(uint8_t));
-
-
-  Serial.printf("  \n    Free heap: %d\n", esp_get_free_heap_size());
-  Serial.printf("\n Minimum WiFi.mode  free heap: %d\n", esp_get_minimum_free_heap_size());
+ 
 
 
 
@@ -49,20 +47,19 @@ void setup() {
 
 
   xTaskCreatePinnedToCore(transformTask, "transformTask", 4096, NULL, 9, &transformTaskHandle, CORE1);
-  //vTaskDelay(5000 / portTICK_PERIOD_MS);
+  //vTaskDelay(5000 / portTICK_PERIOD_MS); 
 
 
+  Wire.begin(SDA_PIN, SCK_PIN);
+  Wire.setClock(400000);
 
-  if (EnableOLED == 1) {
+  xTaskCreatePinnedToCore(oledTask, "oledTask", 4096, NULL, 4, &oledTaskHandle, CORE1);
+  //vTaskDelay(6000 / portTICK_PERIOD_MS);
 
-    Wire.begin(SDA_PIN, SCK_PIN);
-    Wire.setClock(400000);
+  xTaskCreatePinnedToCore(max3010xTask, "max3010xTask", 4096, NULL, 5, &max3010xTaskHandle, CORE0);
+  //vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    xTaskCreatePinnedToCore(oledTask, "oledTask", 4096, NULL, 4, &oledTaskHandle, CORE1);
-    //vTaskDelay(6000 / portTICK_PERIOD_MS);
-
-    xTaskCreatePinnedToCore(max3010xTask, "max3010xTask", 4096, NULL, 5, &max3010xTaskHandle, CORE0);
-    //vTaskDelay(2000 / portTICK_PERIOD_MS);
+  if (FTconfig.EnableGPS == 1) {
 
     xTaskCreatePinnedToCore(gpsTask, "gpsTask", 4096, NULL, 5, &gpsTaskHandle, CORE0);
     //vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -78,6 +75,16 @@ void setup() {
   GenerateKeyPairs(myPrivate, myPublic);
   Serial.println("GenerateKeyPairs  successfully.");
 
+  // Serial.printf(" FTconfig.WifiMode%d .", FTconfig.WifiMode);
+
+  if (TurnOnWifi) {
+
+    Serial.print("\n   start wifi      \n");
+    wifiMode();
+
+    Serial.print("\n    wifi    finish \n");
+  }
+
   esp_timer_create_args_t timer_args = {
     .callback = &onTimer,
     .arg = NULL,
@@ -89,7 +96,7 @@ void setup() {
   esp_timer_start_periodic(timer, 60000000);
   if (TurnOnWifi) {
 
-    WiFi.mode(WIFI_AP);
+
     xTaskCreatePinnedToCore(httpdTask, "httpdTask", 4096, NULL, 4, &httpdTaskHandle, CORE0);
 
     xTaskCreatePinnedToCore(sessionCipherTask, "sessionCipherTask", 8192, NULL, 9, &sessionCipherTaskHandle, CORE1);
@@ -119,8 +126,7 @@ void setup() {
   }
 
 
-  Serial.printf("  heap: %d\n", esp_get_free_heap_size());
-  Serial.printf("Minimum: %d\n", esp_get_minimum_free_heap_size());
+  
 }
 
 void loop() {

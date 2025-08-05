@@ -5,7 +5,7 @@
 //-------------------------------------------------------hardware
 
 //-----------------------------peripherals
-uint8_t EnableOLED = 1;    // if  peripherals attached
+uint8_t EnableGPS = 1;    // if  peripherals attached
 uint8_t AmplitudeIR = 60;  // if  peripherals attached
 uint8_t menuButton = 0;  //loop menu ,pageButton=0;
 uint8_t pageButton = 0;  //loop page ,long press sos
@@ -16,7 +16,7 @@ uint8_t takingHBR = 0;
 uint8_t LocationSaveFreq = 1;
 uint8_t RelayNum = 0;
 uint8_t oledMsgShow = 1;
-volatile bool TurnOnWifi = 1;  //0 off / 1 on
+volatile bool TurnOnWifi = true;  //0 off / 1 on
 uint8_t FavoriteMAC[OCT][6];   //MAC address of AP
 
 uint8_t LedRed = 0;
@@ -39,7 +39,7 @@ size_t frame_len[KEY];
 
 volatile uint8_t Role = 0;      //FT / Relay(PktDensity<6&&rssi< x Dbm) (broadcast MAC and time every 5 min)  / Sensor/ Gateway(IOT manager) /Camera /Kids
 volatile uint8_t Mode = 2;      //0 Watch / 1 Dock /2  FT  /3  Forward /4  SOS
-volatile uint8_t WifiMode = 0;  //AP / STA
+//volatile uint8_t WifiMode = 0;  // 0 disable /1 AP /2 STA
 volatile bool PhonePermit = false;
 extern volatile int timeZone = 8;  //timeZone offset UTC
 volatile uint8_t MissionGroup = 0;
@@ -125,7 +125,7 @@ volatile uint8_t LastMeetingB = 0;  // last meeting id for active
 
 
 uint8_t GreetingCode[OCT];
-bool SandboxFlag = true;
+bool RebootFT = true;
 
 //-----------------------------Contact
 
@@ -148,15 +148,11 @@ volatile uint16_t MeetingIndex = 0;
 
 
 
-
-
-uint8_t WsText[512];
-
-volatile uint8_t WsTextLen;
+ 
 
 //-----------------------------instance
 
-PktStruct WsQueue[KEY];  // ws_BIN received
+PktStruct WsQueue[HKEY];  // ws_BIN received
 PktStruct SndPkt[KEY];
 
 

@@ -33,7 +33,7 @@ void randByteArray(uint8_t *byteArray) {
 
 void GenerateKeyPairs(uint8_t *myPrivate, uint8_t *myPublic) {
   Curve25519::dh1(myPrivate, myPublic);
-  Serial.println("\nGenerateKeyPairs myPrivate:\t");
+  //Serial.println("\nGenerateKeyPairs myPrivate:\t");
   //for (int i = 0; i < 32; i++) //Serial.printf(" %02X", myPrivate[i]);
   //Serial.printf("\nGenerateKeyPairs myPublic:\t");
   //for (int i = 0; i < 32; i++) //Serial.printf(" %02X", myPublic[i]);
