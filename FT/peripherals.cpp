@@ -380,7 +380,7 @@ void gpsTask(void *pvParameters) {
 void oledTask(void *pvParameters) {
 
   uint8_t LanguageFont = FTconfig.oledLanguage;  // if  peripherals attached ,msg langunge
-
+  double displayedDistanceKm = 0;
 
   pinMode(MENU_BTN, INPUT_PULLUP);
   pinMode(BEEPER, OUTPUT);
@@ -489,8 +489,8 @@ void oledTask(void *pvParameters) {
 
 
                 if (TotalDistanceMeters > 99999) {
-                  TotalDistanceMeters = TotalDistanceMeters / 1000;
-                  itoa(TotalDistanceMeters, buffer, 10);
+                  displayedDistanceKm = TotalDistanceMeters / 1000;
+                  itoa(displayedDistanceKm, buffer, 10);
                   u8g2.setCursor(0, 40);
                   u8g2.print("Trip:");
                   u8g2.setCursor(42, 40);
@@ -498,7 +498,7 @@ void oledTask(void *pvParameters) {
                   u8g2.print(buffer);
                   u8g2.print("km");
                 } else {
-                  itoa(TotalDistanceMeters, buffer, 10);
+                  itoa(displayedDistanceKm, buffer, 10);
                   u8g2.setCursor(0, 40);
                   u8g2.print("Trip:");
                   u8g2.setCursor(42, 40);
@@ -856,14 +856,14 @@ void oledTask(void *pvParameters) {
                 u8g2.setFont(u8g2_font_t0_22_te);
                 u8g2.setCursor(0, KEY);
                 u8g2.print("rebooting");
-                u8g2.sendBuffer(); 
+                u8g2.sendBuffer();
 
                 if (TurnOnWifi == false) {
 
-                  FTconfig.Mode = 1;
+                  FTconfig.WifiMode = 1;
                 } else {
 
-                  FTconfig.Mode = 0;
+                  FTconfig.WifiMode = 0;
                 }
                 if (saveConfig()) {
 
