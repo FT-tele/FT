@@ -4,8 +4,8 @@
 NssPin 10
 RstPin 8
 BusyPin 9
-DIO1Pin 38
-DIO2Pin 46
+DIO1Pin 46
+DIO2Pin 38
 
 
 MISO 13
@@ -43,4 +43,5 @@ AUDIO_SPEAKER_DIN 18
 
 AUDIO_MIC_SCK 7       
 AUDIO_MIC_WS 6        
+
 AUDIO_MIC_SD 4  
