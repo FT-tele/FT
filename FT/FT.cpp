@@ -302,6 +302,42 @@ void settingToFront() {
   webSocket.broadcastTXT(configJson);
 }
 
+void addToFront(uint8_t w_or_m, uint8_t listIndex) {
+  JsonDocument addArrayJson;
+  JsonDocument doc;
+  // JsonArray speechArray = addArrayJson["speechUserList"].to<JsonArray>();
+  addArrayJson["T"] = 2;
+  //Serial.printf("\n WhisperNum %d , WhisperNew %d , WhisperTopIndex %d   \n", WhisperNum, WhisperNew, WhisperTopIndex);
+  if (w_or_m == 0) {
+    JsonArray whisperArray = addArrayJson["WhisperList"].to<JsonArray>();
+
+    if (WhisperList[listIndex].status == 3) {
+      String front_Name1 = String((char *)WhisperList[listIndex].name);
+      doc["name"] = front_Name1;
+      doc["msgId"] = WhisperList[listIndex].msgId;
+      doc["sessionId"] = listIndex;
+      whisperArray.add(doc);
+      WhisperMsgId = WhisperList[listIndex].msgId;
+    }
+
+  } else {
+    JsonArray meetingArray = addArrayJson["MeetingList"].to<JsonArray>();
+
+
+    if (MeetingList[listIndex].status == 3) {
+      String front_Name2 = String((char *)MeetingList[listIndex].name);
+      doc["name"] = front_Name2;
+      doc["msgId"] = MeetingList[listIndex].msgId;
+      doc["sessionId"] = listIndex;
+      meetingArray.add(doc);
+      MeetingMsgId = MeetingList[listIndex].msgId;
+    }
+  }
+  String addListStr = "";
+  serializeJson(addArrayJson, addListStr);
+  webSocket.broadcastTXT(addListStr);
+}
+
 // Function to write session data to LittleFS
 bool writeSessionList(ContactStruct *whisperList, uint16_t whisperSize, ContactStruct *meetingList, uint16_t meetingSize) {
   File file = LittleFS.open("/Session.bin", "w");
@@ -355,7 +391,7 @@ void jsonReceived(String jsonStr)  //===================================
           ESP.restart();
         }
         if (cmdType == 2) {
- 
+
 
           LittleFS.remove("/SystemConfig.bin");
           LittleFS.remove("/Session.bin");
@@ -1205,6 +1241,7 @@ void transformTask(void *pvParameters) {
                           vTaskDelay(pdMS_TO_TICKS(10));
                           // send new whisper json
                           WhisperAdd = false;
+                          addToFront(0, rcvTunIdx);
                         }
                       }
                       break;
@@ -1242,19 +1279,10 @@ void transformTask(void *pvParameters) {
                             memcpy(MeetingList[MeetingNew].name, WhisperList[RcvIndex].name, WhisperList[RcvIndex].nameLen);
                             MeetingList[MeetingNew].nameLen = WhisperList[RcvIndex].nameLen;
                             MeetingNum++;
-                            JsonDocument meetingNotify;
-                            String meetingNotifyStr = "";
-                            JsonDocument sessionArrayJson;
-                            meetingNotify["T"] = 2;
-                            JsonArray meetingArray = meetingNotify["MeetingList"].to<JsonArray>();
-                            String created_Name = String((char *)MeetingList[MeetingNew].name);
-                            sessionArrayJson["name"] = created_Name;
-                            sessionArrayJson["msgId"] = MeetingList[MeetingNew].msgId;
-                            sessionArrayJson["sessionId"] = MeetingNew;
-                            meetingArray.add(sessionArrayJson);
-                            serializeJson(meetingNotify, meetingNotifyStr);
-                            webSocket.broadcastTXT(meetingNotifyStr);
+                         
                             MeetingAdd = false;
+
+                            addToFront(1, RcvIndex);
                             MeetingNew = 0;
                             memcpy(&MeetingList[RcvIndex].lowId, MeetingList[RcvIndex].sessionId, FOUR);
                             memcpy(&MeetingList[RcvIndex].highId, &MeetingList[RcvIndex].sessionId[FOUR], FOUR);
@@ -1528,7 +1556,7 @@ void sessionCipherTask(void *pvParameters) {
 
             MeetingList[MeetingTopIndex].status = 3;
             if (WsQueue[deq_idx].pktLen < 40) {
-              Serial.printf("\n safe %d #  create  %d \n.", MeetingTopIndex, WsQueue[deq_idx].pktLen);
+              //Serial.printf("\n safe %d #  create  %d \n.", MeetingTopIndex, WsQueue[deq_idx].pktLen);
               meeting_room_len = WsQueue[deq_idx].pktLen - 2;
 
               randomSeed(millis() + WsQueue[deq_idx].payloadData[meeting_room_len]);
@@ -1541,7 +1569,7 @@ void sessionCipherTask(void *pvParameters) {
               }
 
             } else {
-              Serial.printf("\n temp create  %d \n.", WsQueue[deq_idx].pktLen);
+              //Serial.printf("\n temp create  %d \n.", WsQueue[deq_idx].pktLen);
               uint8_t tmp_room[KEY];
               uint8_t tmp_key[KEY];
               uint8_t tmp_iv[HKEY];
@@ -1566,6 +1594,9 @@ void sessionCipherTask(void *pvParameters) {
             memcpy(&MeetingList[MeetingTopIndex].lowId, MeetingList[MeetingTopIndex].sessionId, FOUR);
             memcpy(&MeetingList[MeetingTopIndex].highId, &MeetingList[MeetingTopIndex].sessionId[FOUR], FOUR);
             vTaskDelay(10 / portTICK_PERIOD_MS);
+            MeetingAdd = false;
+
+            addToFront(1, MeetingTopIndex);
           }
           break;
 
@@ -1704,13 +1735,14 @@ void sessionCipherTask(void *pvParameters) {
                       WhisperList[WhisperIndex].status = 3;
                       vTaskDelay(pdMS_TO_TICKS(10));
                       WhisperAdd = false;
+                      addToFront(0, WhisperIndex);
                     }
                   }
                 }
                 break;
               case IVM:  //4,4,buddyIndex_2,buddy_8,MyIV_16,ciphered(mtSessionId_8,mtSharedKey_32,wsSessionId_8)
                 {
-                  Serial.println("invite   meeting.");
+                  //Serial.println("invite   meeting.");
                   uint8_t metIndex;
                   uint8_t tmp[TM];
                   SndIndex = WsQueue[deq_idx].payloadData[2];

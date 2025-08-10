@@ -84,9 +84,6 @@ uint8_t sosResponse = 0;  // MENU_BTN click ackonwledge
 
 void onTimer(void *arg) {
   taskReady = true;  // Set a flag when the timer fires
-
-  // Serial.printf("timer %d\n", millis());
-  //relay broadcast time  ,FT check relay num
 }
 
 
@@ -395,6 +392,10 @@ void oledTask(void *pvParameters) {
 
 
   u8g2.begin();
+  //u8g2.drawBox(0, 0, DTM, TM);
+  //u8g2.setDrawColor(0);
+  u8g2.setContrast(255); // Range: 0 (dim) to 255 (bright)
+
   char buffer[HKEY];
   char *row[HKEY];
   u8g2.enableUTF8Print();

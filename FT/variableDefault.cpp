@@ -25,7 +25,7 @@ uint8_t LedBlue = 0;
 
 char MsgLoop[HKEY][PKT];
 uint8_t scrollSpeed = 2;
-StaticJsonDocument<200> GPSjson;
+StaticJsonDocument<200> GPSjson; 
 
 int Satellites = 0;
 //-------------------------------------------------------software

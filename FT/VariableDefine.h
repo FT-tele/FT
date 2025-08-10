@@ -178,7 +178,7 @@ extern uint8_t LedBlue;
 
 extern char MsgLoop[HKEY][PKT];
 extern uint8_t scrollSpeed;
-extern StaticJsonDocument<200> GPSjson;
+extern StaticJsonDocument<200> GPSjson; 
 
 
 
