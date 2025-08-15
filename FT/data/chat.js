@@ -1,8 +1,8 @@
 //---------------------------------------------VARIABLES
 //const ws = new WebSocket('ws://' + window.location.hostname + ':81/');
-//const ws = new WebSocket('ws://' + window.location.hostname + ':81/');
+const ws = new WebSocket('ws://' + window.location.hostname + ':81/');
 //const ws = new WebSocket('ws://' + '192.168.4.1' + '/ws');
-const ws = new WebSocket('ws://' + '192.168.4.1' + ':81');
+//const ws = new WebSocket('ws://' + '10.80.10.13' + ':81');
 const MsgTextDecoder = new TextDecoder("utf-8");
 const MsgTextEncoder = new TextEncoder();
 const ChatBox = document.getElementById("chat-box");
@@ -828,32 +828,64 @@ function deliverSOS() {
 //-----------------picture-btn  
 
 function blurEffect(event) {
-    event.preventDefault(); // Prevent default scrolling behavior
+    event.preventDefault(); // Prevent default browser behavior
 
-    const rect = canvas.getBoundingClientRect(); // Get updated canvas position & size
-    const scaleX = canvas.width / rect.width;   // Adjust for scaled width
-    const scaleY = canvas.height / rect.height; // Adjust for scaled height
+    const rect = canvas.getBoundingClientRect(); // Get canvas position and size on the screen
+    const scaleX = canvas.width / rect.width;   // Calculate the scaling factor for X
+    const scaleY = canvas.height / rect.height;   // Calculate the scaling factor for Y
 
-    let x, y;
+    let mouseX, mouseY;
 
+    // Determine the mouse or touch position
     if (event.type.startsWith("touch") && event.touches.length > 0) {
         const touch = event.touches[0];
-        x = (touch.clientX - rect.left) * scaleX;
-        y = (touch.clientY - rect.top) * scaleY;
-    } else if (event.offsetX !== undefined && event.offsetY !== undefined) {
-        x = event.offsetX;
-        y = event.offsetY;
+        // Calculate the position on the scaled canvas drawing surface
+        mouseX = (touch.clientX - rect.left) * scaleX;
+        mouseY = (touch.clientY - rect.top) * scaleY;
     } else {
-        console.error("Could not determine touch or mouse position!");
-        return;
+        // For mouse events, the offsetX/Y is relative to the canvas padding-box
+        // so we need to adjust for scaling.
+        mouseX = event.offsetX * scaleX;
+        mouseY = event.offsetY * scaleY;
     }
 
+    // Define the size of the blur area
+    const blurSize = 16; // Size of the square blur area
+    const halfBlurSize = blurSize / 2;
 
-    ctx.filter = 'blur(5px)';
-    ctx.drawImage(img, x - 40, y - 40, 80, 80);
-    ctx.filter = 'none';
+    // Create a temporary canvas to apply the blur
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = blurSize;
+    tempCanvas.height = blurSize;
+
+    // Draw the small section of the main canvas onto the temporary one
+    tempCtx.drawImage(
+        canvas, // Source: The main canvas
+        mouseX - halfBlurSize, // Source X
+        mouseY - halfBlurSize, // Source Y
+        blurSize, // Source Width
+        blurSize, // Source Height
+        0, 0, // Destination X, Y
+        blurSize, // Destination Width
+        blurSize // Destination Height
+    );
+
+    // Apply the blur filter to the temporary canvas context
+    tempCtx.filter = 'blur(5px)';
+
+    // Redraw the blurred image onto the temporary canvas (this applies the blur)
+    tempCtx.drawImage(tempCanvas, 0, 0);
+
+    // Draw the blurred temporary canvas back onto the main canvas at the correct position
+    ctx.drawImage(
+        tempCanvas,
+        mouseX - halfBlurSize,
+        mouseY - halfBlurSize,
+        blurSize,
+        blurSize
+    );
 }
-
 
 
 function deliverWebp() {
@@ -900,40 +932,14 @@ function handleSettingsForm() {
     form.textContent = ""; // Clear previous fields
 
     const config = ConfigList; // Ensure config is an object
-    // Dynamically generate input fields
-    /*
-    Object.keys(config).forEach(key => {
-        // Create label element
-        const label = document.createElement("label");
-        label.textContent = `${key}: `; // Use textContent for safety
-
-        let input;
-
-        if (typeof config[key] === "boolean") {
-            // Create switch (checkbox) for boolean values
-            input = document.createElement("input");
-            input.setAttribute("type", "checkbox");
-            input.setAttribute("id", key);
-            input.checked = config[key]; // Set checked status
-        } else {
-            // Create text input for other values
-            input = document.createElement("input");
-            input.setAttribute("type", "text");
-            input.setAttribute("id", key);
-            input.value = config[key]; // Set value safely
-        }
-
-        // Append elements to form
-        label.appendChild(input);
-        form.appendChild(label);
-        form.appendChild(document.createElement("br"));
-    });
-*/
-
     const readOnlyMACKeys = ["MAC_0", "MAC_1", "MAC_2", "MAC_3", "MAC_4", "MAC_5"];
 
     const NoneDisplay = ["T"];
     Object.keys(config).forEach(key => {
+
+        if (NoneDisplay.includes(key)) {
+            return;
+        }
         // Create label element
         const label = document.createElement("label");
         label.textContent = `${key}: `;
@@ -989,6 +995,7 @@ function handleSettingsForm() {
             updatedConfig[input.id] = input.type === "checkbox" ? input.checked : input.value;
         });
         MyName = updatedConfig["MyName"];
+        updatedConfig["T"] = 1;
         //console.log("MyName now is" + MyName);
 
         if (confirm("if SavingConfig = 1 ,settings will be saved forever.WIFI related items need reboot?")) {
@@ -1006,7 +1013,7 @@ function handleSettingsForm() {
     cancelButton.textContent = "✕Cancel";
     cancelButton.style.marginLeft = "10px"; // Adds some space between buttons
     cancelButton.onclick = function () {
-        event.preventDefault(event); // Prevent form submission
+        event.preventDefault(); // Prevent form submission
         configPage.style.display = "none";
     };
 
@@ -1014,7 +1021,7 @@ function handleSettingsForm() {
     rebootButton.textContent = "🔄Reboot";
     rebootButton.style.marginLeft = "20px"; // Adds some space between buttons
     rebootButton.onclick = function () {
-        event.preventDefault(event); // Prevent form submission
+        event.preventDefault(); // Prevent form submission
         if (confirm("Are you sure you want to reboot?")) {
             let rebootMsg = '{"T": 0,"cmdType":1}';
             ws.send(rebootMsg);
@@ -1028,7 +1035,7 @@ function handleSettingsForm() {
     resetButton.textContent = "RESET";
     resetButton.style.marginLeft = "20px"; // Adds some space between buttons
     resetButton.onclick = function () {
-        event.preventDefault(event); // Prevent form submission
+        event.preventDefault(); // Prevent form submission
         if (exportFlag == true) {
             if (confirm("🚫WARNING:This action is IRREVERSIBLE.Exporting your contact first")) {
                 let resetMsg = '{"T": 0,"cmdType":2}';
@@ -1049,7 +1056,7 @@ function handleSettingsForm() {
     exportButton.textContent = "export🔐";
     exportButton.style.marginLeft = "20px"; // Adds some space between buttons
     exportButton.onclick = function () {
-        event.preventDefault(event); // Prevent form submission
+        event.preventDefault(); // Prevent form submission
         if (confirm("⚠️Export settings and contact may lead privacy leak ?")) {
             let exportMsg = '{"T": 0,"cmdType":3}';
             ws.send(exportMsg);
@@ -1060,7 +1067,7 @@ function handleSettingsForm() {
     importButton.textContent = "IMPORT↩";
     importButton.style.marginLeft = "20px"; // Adds some space between buttons
     importButton.onclick = function () {
-        event.preventDefault(event); // Prevent form submission
+        event.preventDefault(); // Prevent form submission
         if (confirm("Are you sure you want to import your data?")) {
             //let importMsg = file.read();
             //ws.send(importMsg);
@@ -1076,7 +1083,6 @@ function handleSettingsForm() {
     buttonContainer.appendChild(rebootButton);
     buttonContainer.appendChild(importButton);
     buttonContainer.appendChild(resetButton);
-
     form.appendChild(buttonContainer);
 };
 
@@ -2288,6 +2294,9 @@ const ctx = canvas.getContext('2d');
 const downloadLink = document.getElementById('downloadLink');
 let img = new Image();
 
+// Define the fixed height you want for the canvas
+const fixedHeight = 300; // You can change this to your desired height
+
 // Load image and display preview
 imageInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
@@ -2296,9 +2305,15 @@ imageInput.addEventListener('change', (event) => {
         reader.onload = (e) => {
             img.src = e.target.result;
             img.onload = () => {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
+                // Calculate new dimensions to fit the fixed height while maintaining aspect ratio
+                const aspectRatio = img.width / img.height;
+                const newHeight = fixedHeight;
+                const newWidth = newHeight * aspectRatio;
+
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
                 preview.style.display = 'block';
             };
         };
@@ -2309,9 +2324,16 @@ imageInput.addEventListener('change', (event) => {
 // Resize image while maintaining aspect ratio
 resizeOptions.addEventListener('change', () => {
     const scale = parseFloat(resizeOptions.value);
-    canvas.width = img.width * scale;
-    canvas.height = img.height * scale;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // Calculate new dimensions based on the original image, then scale it
+    const aspectRatio = img.width / img.height;
+    const scaledHeight = fixedHeight * scale;
+    const scaledWidth = scaledHeight * aspectRatio;
+
+    canvas.width = scaledWidth;
+    canvas.height = scaledHeight;
+
+    ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 });
 
 // Apply blur effect when mouse moves
@@ -2445,8 +2467,8 @@ window.onload = function () {
     }
 
     ws.onerror = (e) => {
-        console.error("WebSocket Error:", error);
-        showNotification(3000, "WebSocket Error:", error);
+        console.error("WebSocket Error:", e);
+        showNotification(3000, "WebSocket Error:", e);
     }
 
     ws.onclose = () => {

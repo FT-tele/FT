@@ -1,195 +1,410 @@
+/* General Page and Container Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
     margin: 0;
     padding: 0;
     display: flex;
-
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .container {
-    position: fixed;
-    /* Ensure it stays full-screen */
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 90vh;
+    width: 100%;
+    height: 100%;
     display: flex;
-    margin: auto;
     flex-direction: column;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
+/* Tab and Header Section (Unified Style) */
 .tabs {
     display: flex;
-    justify-content: space-between;
-    background: #ddddddb6;
-    padding: 5px;
-    height: 6vh;
-    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    background: #e9ecef;
+    padding: 1% 2%;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
-
-.chat-image {
-    width: 200px;
-    /* Set the width */
-    height: 200px;
-    /* Set the height */
-    object-fit: cover;
-    /* Ensure it fits nicely */
-    border-radius: 8px;
-    /* Optional styling */
-    display: block;
-    margin: 5px 0;
-}
-
-.picture-style {
-    width: auto;
-    height: 200px;
-    border-radius: 8px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.audio-style {
-    width: 300px;
-    margin-top: 10px;
-}
-
-.zip-style {
-    display: inline-block;
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.zip-style:hover {
-    background-color: #0056b3;
-}
-
 
 .tab {
-    flex-grow: 1;
+    flex: 1;
     text-align: center;
-    padding: 8px;
+    padding: 1.5% 2%;
     cursor: pointer;
-    border-radius: 5px;
-    font-weight: bold;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #495057;
+    background: #ffffff;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    margin: 0 5px;
+}
+
+.tab:hover {
+    background-color: #dee2e6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab.active {
-    background: #ffcc00;
+    background: #007bff;
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+    transform: translateY(0);
 }
 
 .settings {
     cursor: pointer;
     padding: 10px;
-    font-weight: bold;
+    font-weight: 600;
+    color: #495057;
+    transition: color 0.3s ease;
 }
 
+.settings:hover {
+    color: #007bff;
+}
+
+/* Main Chat and User List Layout */
 .chat-container {
     display: flex;
     flex-direction: row;
-    height: 70vh;
+    flex-grow: 1;
+    min-height: 0;
 }
 
 .user-list {
     flex: 0 0 20%;
-    height: 97%;
-    background: #fff;
-    padding: 10px;
+    background: #f8f9fa;
+    padding: 1%;
     overflow-y: auto;
-    border-right: 3px solid #ccc;
+    border-right: 1px solid #dee2e6;
+    min-height: 0;
 }
 
 .chat-box {
     flex: 1;
-    height: 97%;
-    background: #fff;
-    padding: 20px;
+    background: #ffffff;
+    padding: 2%;
     overflow-y: auto;
-    line-height: 1.5;
-    border-right: 5px solid #ccc;
+    line-height: 1.6;
+    min-height: 0;
 }
 
 .user-item {
+    padding: 1% 1.5%;
     margin-bottom: 6px;
     cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.user-item:active {
-    background-color: rgb(100, 100, 250);
+.user-item:hover {
+    background-color: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.user-item.active {
+    background-color: #007bff;
     color: white;
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+    transform: translateY(0);
 }
 
-
-
+/* Message Styles */
 .prefix {
-    font-size: 10px;
-    color: gray;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    display: block;
+    margin-bottom: 2px;
 }
 
 .message {
-    font-size: 14px;
-    color: black;
+    font-size: 1rem;
+    color: #212529;
+    word-break: break-word;
 }
 
+/* Media and File Styles */
+.chat-image,
+.picture-style {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
+.audio-style {
+    width: 100%;
+    max-width: 400px;
+}
+
+.zip-style {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.zip-style:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Control Panel and Input (Unified Style) */
 .control-panel {
     display: flex;
-    align-items: center;
     justify-content: space-around;
-    background: rgba(238, 238, 238, 0.1);
-    /* Adjust opacity with the last value */
-    height: 4vh;
-    flex-direction: row;
+    align-items: center;
+    background: #e9ecef;
+    padding: 1%;
+    flex-shrink: 0;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.control-panel button {
+    background: #ffffff;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.control-panel button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
 .input-box-container {
     display: flex;
-    padding: 5px;
-    background: #eee;
-    height: 10vh;
+    align-items: center;
+    padding: 1%;
+    background: #e9ecef;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .input-box {
     flex-grow: 1;
-    margin-right: 10px;
-    padding: 5px;
-    white-space: normal;
-    /* Allows wrapping at container width */
-    word-wrap: break-word;
-    /* Wraps at word boundaries */
-    overflow-wrap: break-word;
-    /* Ensures proper breaking */
+    margin-right: 1%;
+    padding: 1% 2%;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    font-size: 1rem;
+    resize: vertical;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+#send-btn {
+    padding: 1% 2%;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+#send-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#send-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Floating Forms */
+.floating-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70vw;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    display: none;
+    max-height: 70vh;
+    box-sizing: border-box;
+}
+
+/* settings-page is a separate element, not a floating-form, so it needs its own styles */
+.settings-page {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    z-index: 9999;
+}
+
+/* New CSS to make the form itself scrollable */
+#settings-form {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 0 15px;
+}
+
+/* Corrected button group styles to fix overflow bug */
+.floating-form .button-group {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding-top: 10px;
+    border-top: 1px solid #dee2e6;
+}
+
+.floating-form button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.floating-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.floating-form button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.floating-form button:first-of-type {
+    background-color: #007bff;
+    color: white;
+}
+
+.floating-form button:last-of-type {
+    background-color: #6c757d;
+    color: white;
+}
+
+#pic-form {
+    text-align: center;
+}
+
+#preview canvas {
     max-width: 100%;
-    /* Prevents overflow */
+    height: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-
-
-
-.send-btn {
-    padding: 10px;
-    border: 5px solid black;
-    /* Bold border */
-    border-radius: 15px;
-    /* Rounded edges */
+#resizeOptions,
+#imageInput {
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
+.mac-inputs input,
+.IoT-inputs input {
+    width: calc(16.66% - 5px);
+    display: inline-block;
+}
 
+/* Notification Bar with Progress Effect */
+#notify {
+    /* Position at the top and center */
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 99999;
+    min-width: 250px;
+    display: none;
+    overflow: hidden; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+}
+
+/* The actual progress bar fill */
+#notify::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 5px;
+    background-color: #007bff;
+    width: 0;
+    border-radius: 0 0 8px 8px;
+    animation: fill-bar 3s forwards;
+}
+
+/* The animation that fills the bar from left to right */
+@keyframes fill-bar {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+/* Progress Bar for Uploads */
 .progress-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 200px;
     background: rgba(0, 0, 0, 0.5);
     padding: 10px;
     border-radius: 8px;
     color: white;
     text-align: center;
+    z-index: 10000;
 }
 
 .progress-bar {
@@ -206,107 +421,33 @@ body {
     background: limegreen;
 }
 
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        border-radius: 0;
+    }
 
-.settings-page {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 20px;
-    height: 100vh;
-    z-index: 9999;
-}
+    .user-list {
+        flex: 0 0 100px;
+    }
 
-.floating-form {
-    position: absolute;
-    top: 300;
-    left: 100;
-    background: white;
-    border: 2px solid #ccc;
-    padding: 20px;
-    display: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+    .input-box-container {
+        height: auto;
+        padding: 10px;
+    }
 
+    .control-panel {
+        height: auto;
+        flex-wrap: wrap;
+        padding: 10px;
+    }
 
-canvas {
-    cursor: crosshair;
-    border: 1px solid #000;
-    width: 100%;
-}
+    .control-panel button {
+        font-size: 1.2rem;
+        padding: 5px;
+    }
 
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-.downloadLink {
-    display: none;
-    margin-top: 10px;
-}
-
-
-.button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.floating-form select {
-    display: block;
-    margin-bottom: 10px;
-    /* Adds spacing between dropdowns */
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 26px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: background-color 0.3s;
-    border-radius: 26px;
-}
-
-.slider:before {
-    content: "";
-    position: absolute;
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    top: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-}
-
-input:checked+.slider {
-    background-color: #4CAF50;
-}
-
-input:checked+.slider:before {
-    transform: translateX(24px);
-}
-
-#status {
-    margin-top: 20px;
-    font-size: 1.2em;
-    color: #333;
+    .tab, .settings {
+        padding: 8px;
+    }
 }

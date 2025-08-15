@@ -66,8 +66,9 @@
 
 
         <!-- Floating send file under whisper mode Form -->
-        <div id="sendFile-form" class="floating-form" style="top: 20px; right: 20px;">
-            <label for="sendFile-form">⏳send file take time and may fail—stay close to your buddy for better stability!
+        <div id="sendFile-form" class="floating-form"">
+            <label for=" sendFile-form">⏳send file take time and may fail—stay close to your buddy for better
+            stability!
             </label>
             <div class="button-group">
                 <button onclick="deliverFile()">SEND BIG FILE</button>
@@ -79,14 +80,13 @@
 
 
         <!-- Floating Audio Recorder Form -->
-        <div id="sensor-form" class="floating-form" style="top: 20px; left: 20px;">
+        <div id="sensor-form" class="floating-form">
 
 
             <h3>Monitor Data</h3>
             <label for="tileBackground"> map picture </label>
             <input type="file" id="tileBackground" accept=".png">
-            <div id="banner"
-                style="background: #333; color: white; padding: 10px; text-align: center; font-size: 16px;">
+            <div id="banner">
                 <span id="speed">Speed: 0 km/h</span> |
                 <span id="distance">Distance: 0 meters</span> |
                 <span id="latitude">Latitude: 0</span> |
@@ -96,7 +96,7 @@
                 <span id="status">Status: N/A</span>
             </div>
 
-            <div id="map" style="width: 100%; height: 400px;"></div>
+            <div id="map"></div>
 
             <div class="button-group">
                 <button onclick="closeForm('sensor-form')">Close ❌</button>
@@ -111,8 +111,8 @@
 
 
         <!-- Floating invite  Form -->
-        <div id="invite-form" class="floating-form" style="top: 20px; right: 20px;">
-            <input type="text" id="invitationKey" placeholder="Enter room key" minlength="20">
+        <div id="invite-form" class="floating-form"">
+            <input type=" text" id="invitationKey" placeholder="Enter room key" minlength="20">
             <input type="text" id="meeting" placeholder="Enter meeting room name ,3 letters at least" minlength="4">
             <div class="button-group">
                 <button onclick="joinMeeting('Random')">Safe Create</button>
@@ -122,10 +122,10 @@
         </div>
 
         <!-- Floating phoneCall member join meeting Form -->
-        <div id="phone-form" class="floating-form" style="top: 20px; right: 20px;">
+        <div id="phone-form" class="floating-form"">
 
             </select>
-            <audio id="audioPlayer" autoplay></audio>
+            <audio id=" audioPlayer" autoplay></audio>
             <div class="button-group">
                 <button id="startSpeak">📲Speak</button>
                 <button id="testToneBtn">Test Tone</button>
@@ -138,10 +138,10 @@
 
 
         <!-- Floating invite member join meeting Form -->
-        <div id="addMeb-form" class="floating-form" style="top: 20px; right: 20px;">
+        <div id="addMeb-form" class="floating-form"">
 
 
-            <label for="whisperUsers">buddy:</label>
+            <label for=" whisperUsers">buddy:</label>
             <select id="whisperList">
             </select>
 
@@ -153,7 +153,7 @@
 
 
         <!-- Floating SOS  Form -->
-        <div id="sos-form" class="floating-form" style="top: 20px; left: 20px;">
+        <div id="sos-form" class="floating-form">
 
             <label for="list1">Type:</label>
             <select id="list1">
@@ -210,87 +210,83 @@
         </div>
 
         <!-- Floating invite member join meeting Form -->
-        <div id="find-form" class="floating-form" style="top: 20px; right: 20px;">
+        <div id="find-form" class="floating-form"">
 
-            <div class="mac-group">
-                <div class="mac-inputs">
-                    <label>Enter Target MAC Address (Hex):</label><br>
-                    <input type="text" maxlength="2" id="MAC_input1" placeholder="MAC 1">
-                    <input type="text" maxlength="2" id="MAC_input2" placeholder="MAC 2">
-                    <input type="text" maxlength="2" id="MAC_input3" placeholder="MAC 3">
-                    <input type="text" maxlength="2" id="MAC_input4" placeholder="MAC 4">
-                    <input type="text" maxlength="2" id="MAC_input5" placeholder="MAC 5">
-                    <input type="text" maxlength="2" id="MAC_input6" placeholder="MAC 6">
-                </div>
-                <br><br><br>
-                <div class="sos-input">
-                    <div>
-
-
-                        <label>ws2812 RGB Values:</label><br>
-                        <!-- Color preview box -->
-                        <div id="colorPreview" style="width:24px; height:16px; border:1px solid #000; margin-top:8px;">
-                        </div>
-
-                        <input type="number" id="inputR" placeholder="R" min="0" max="255">
-                        <input type="number" id="inputG" placeholder="G" min="0" max="255">
-                        <input type="number" id="inputB" placeholder="B" min="0" max="255">
-                    </div>
-
-
-                    <div class="mac-options">
-                        <label>
-                            <input type="checkbox" id="enableMAC"> Enable MAC
-                        </label>
-                        <br>
-                        <br>
-                    </div>
-                    <button onclick="Find()">Send MAC Data</button>
-                    <button onclick="ackSOS()">ACK SOS</button>
-                </div>
-
-                <div class="IoT-inputs">
-                    <label>Switch Value:</label><br>
-                    <input type="number" id="switch-01" placeholder="bp" min="0" max="1">
-                    <input type="number" id="switch-02" placeholder="sw1" min="0" max="1">
-                    <input type="number" id="switch-03" placeholder="sw2" min="0" max="1">
-                    <input type="number" id="switch-04" placeholder="k" min="0" max="255">
-                    <input type="number" id="switch-05" placeholder="v" min="0" max="255">
-                    <br><br>
-                    <button onclick="sendCmd()">RC🕹️</button>
-                </div>
-
-                <button onclick="closeForm('find-form')">Close ❌</button>
+            <div class=" mac-group">
+            <div class="mac-inputs">
+                <label>Enter Target MAC Address (Hex):</label><br>
+                <input type="text" maxlength="2" id="MAC_input1" placeholder="MAC 1">
+                <input type="text" maxlength="2" id="MAC_input2" placeholder="MAC 2">
+                <input type="text" maxlength="2" id="MAC_input3" placeholder="MAC 3">
+                <input type="text" maxlength="2" id="MAC_input4" placeholder="MAC 4">
+                <input type="text" maxlength="2" id="MAC_input5" placeholder="MAC 5">
+                <input type="text" maxlength="2" id="MAC_input6" placeholder="MAC 6">
             </div>
+            <br><br><br>
+            <div class="sos-input">
+                <div>
+
+
+                    <label>ws2812 RGB Values:</label><br>
+                    <!-- Color preview box -->
+                    <div id="colorPreview" style="width:24px; height:16px; border:1px solid #000; margin-top:8px;">
+                    </div>
+
+                    <input type="number" id="inputR" placeholder="R" min="0" max="255">
+                    <input type="number" id="inputG" placeholder="G" min="0" max="255">
+                    <input type="number" id="inputB" placeholder="B" min="0" max="255">
+                </div>
+
+
+                <div class="mac-options">
+                    <label>
+                        <input type="checkbox" id="enableMAC"> Enable MAC
+                    </label>
+                    <br>
+                    <br>
+                </div>
+                <button onclick="Find()">Send MAC Data</button>
+                <button onclick="ackSOS()">ACK SOS</button>
+            </div>
+
+            <div class="IoT-inputs">
+                <label>Switch Value:</label><br>
+                <input type="number" id="switch-01" placeholder="bp" min="0" max="1">
+                <input type="number" id="switch-02" placeholder="sw1" min="0" max="1">
+                <input type="number" id="switch-03" placeholder="sw2" min="0" max="1">
+                <input type="number" id="switch-04" placeholder="k" min="0" max="255">
+                <input type="number" id="switch-05" placeholder="v" min="0" max="255">
+                <br><br>
+                <button onclick="sendCmd()">RC🕹️</button>
+            </div>
+
+            <button onclick="closeForm('find-form')">Close ❌</button>
         </div>
+    </div>
 
 
 
-        <div class="control-panel">
-            <button id="SOS-btn">🆘</button>
-            <button id="Search-btn">👀</button>
-            <button id="IoT-btn">🤖</button>
-            <button id="invite-btn">✨</button>
-            <button id="pic-btn">📷</button>
-            <button id="file-btn">🗂️</button>
-            <button id="GPS-btn">🌎</button>
-            <button id="dial-btn">📞</button>
-            <button id="addMeb-btn">👫</button>
-            <button id="del-btn">❎</button>
-            <button id="leave-btn">❌</button>
-            <input type="file" id="imageInput" style="display: none">
-        </div>
+    <div class="control-panel">
+        <button id="SOS-btn">🆘</button>
+        <button id="Search-btn">👀</button>
+        <button id="IoT-btn">🤖</button>
+        <button id="invite-btn">✨</button>
+        <button id="pic-btn">📷</button>
+        <button id="file-btn">🗂️</button>
+        <button id="GPS-btn">🌎</button>
+        <button id="dial-btn">📞</button>
+        <button id="addMeb-btn">👫</button>
+        <button id="del-btn">❎</button>
+        <button id="leave-btn">❌</button>
+        <input type="file" id="imageInput" style="display: none">
+    </div>
 
-        <div class="input-box-container">
-            <input class="input-box" id="input-box" maxlength="200" placeholder="Type a message...">
-            <button id="send-btn">Send</button>
-        </div>
+    <div class="input-box-container">
+        <input class="input-box" id="input-box" maxlength="200" placeholder="Type a message...">
+        <button id="send-btn">Send</button>
+    </div>
 
-        <div class="cartoon-bar">
-            <div class="segment valid" id="valid"></div>
-            <div class="segment invalid" id="invalid"></div>
-            <div class="segment error" id="error"></div>
-        </div>
+
     </div>
 
 
